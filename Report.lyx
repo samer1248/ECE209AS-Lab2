@@ -1,0 +1,2147 @@
+#LyX 2.3 created this file. For more info see http://www.lyx.org/
+\lyxformat 544
+\begin_document
+\begin_header
+\save_transient_properties true
+\origin unavailable
+\textclass article
+\use_default_options true
+\maintain_unincluded_children false
+\language english
+\language_package default
+\inputencoding auto
+\fontencoding global
+\font_roman "default" "default"
+\font_sans "default" "default"
+\font_typewriter "default" "default"
+\font_math "auto" "auto"
+\font_default_family default
+\use_non_tex_fonts false
+\font_sc false
+\font_osf false
+\font_sf_scale 100 100
+\font_tt_scale 100 100
+\use_microtype false
+\use_dash_ligatures true
+\graphics default
+\default_output_format default
+\output_sync 0
+\bibtex_command default
+\index_command default
+\paperfontsize default
+\spacing single
+\use_hyperref false
+\papersize default
+\use_geometry true
+\use_package amsmath 1
+\use_package amssymb 1
+\use_package cancel 1
+\use_package esint 1
+\use_package mathdots 1
+\use_package mathtools 1
+\use_package mhchem 1
+\use_package stackrel 1
+\use_package stmaryrd 1
+\use_package undertilde 1
+\cite_engine basic
+\cite_engine_type default
+\biblio_style plain
+\use_bibtopic false
+\use_indices false
+\paperorientation portrait
+\suppress_date false
+\justification true
+\use_refstyle 1
+\use_minted 0
+\index Index
+\shortcut idx
+\color #008000
+\end_index
+\leftmargin 1in
+\topmargin 1in
+\rightmargin 1in
+\bottommargin 1in
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\paragraph_indentation default
+\is_math_indent 0
+\math_numbering_side default
+\quotes_style english
+\dynamic_quotes 0
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+\listings_params "keywordstyle={\color{blue}\bfseries}"
+\tracking_changes false
+\output_changes false
+\html_math_output 0
+\html_css_as_file 0
+\html_be_strict false
+\end_header
+
+\begin_body
+
+\begin_layout Title
+ECE2019AS (Fall 2019) - Lab 1
+\end_layout
+
+\begin_layout Author
+Samer Hanna 305033107
+\end_layout
+
+\begin_layout Date
+Oct.
+ 21, 2019
+\end_layout
+
+\begin_layout Section*
+0 Preliminaries
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+0(a) Public Repository: 
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+0(b) No one.
+ The code and report where entirely made by me.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+0(c) Samer Hanna 100%
+\end_layout
+
+\begin_layout Section*
+1 MDP System
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+1(a) The state space consists of the location in the grid 
+\begin_inset Formula $(x,y)$
+\end_inset
+
+ and the heading 
+\begin_inset Formula $h$
+\end_inset
+
+.
+ I chose to represent it as 
+\begin_inset Formula $(x,y,h)$
+\end_inset
+
+ where 
+\begin_inset Formula $x\in\{0,1,\cdots,L-1\}$
+\end_inset
+
+,
+\begin_inset Formula $y\in\{0,1,\cdots,W-1\},$
+\end_inset
+
+and 
+\begin_inset Formula $h\in\{0,1,\cdots,11\}$
+\end_inset
+
+.
+ Hence, 
+\begin_inset Formula $N_{S}=L\times W\times12$
+\end_inset
+
+.
+ 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+# State defined as [x position, y position, heading]
+\end_layout
+
+\begin_layout Plain Layout
+
+state_space = []
+\end_layout
+
+\begin_layout Plain Layout
+
+i=0
+\end_layout
+
+\begin_layout Plain Layout
+
+for h in range(H):
+\end_layout
+
+\begin_layout Plain Layout
+
+    for y in range(W):
+\end_layout
+
+\begin_layout Plain Layout
+
+        for x in range(L):
+\end_layout
+
+\begin_layout Plain Layout
+
+            state_space.append([x,y,h])
+\end_layout
+
+\begin_layout Plain Layout
+
+            i=i+1
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+1(b) The action space consits of the linear action 
+\begin_inset Formula $l$
+\end_inset
+
+ and rotation action 
+\begin_inset Formula $r$
+\end_inset
+
+.
+ I represent it as 
+\begin_inset Formula $(l,r)$
+\end_inset
+
+ where 
+\begin_inset Formula $l\in\{-1,0,1\}$
+\end_inset
+
+ which corresponds to move backward, don't move, move forward respectively.
+ 
+\begin_inset Formula $N_{A}=7$
+\end_inset
+
+
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+# Action defined as [linear action (backward, forward), rotate action]
+\end_layout
+
+\begin_layout Plain Layout
+
+rotate_actions = [-1,0,1] # -1 rotate counter clock wise, 0 don't rotate,
+ 1 rotate clockwise
+\end_layout
+
+\begin_layout Plain Layout
+
+linear_actions = [-1,0,1] # -1 go backward, 0 don't move, 1 go forward
+\end_layout
+
+\begin_layout Plain Layout
+
+action_space = []
+\end_layout
+
+\begin_layout Plain Layout
+
+action_space.append([0,0])
+\end_layout
+
+\begin_layout Plain Layout
+
+for ra in rotate_actions:
+\end_layout
+
+\begin_layout Plain Layout
+
+    for la in linear_actions:
+\end_layout
+
+\begin_layout Plain Layout
+
+        if la!=0:
+\end_layout
+
+\begin_layout Plain Layout
+
+            action_space.append([la,ra])
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+1(c) 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+def calc_prob_sa_to_sd(pe,s,a,sd):
+\end_layout
+
+\begin_layout Plain Layout
+
+    # Split each state and action into its componenets
+\end_layout
+
+\begin_layout Plain Layout
+
+    x,y,h = s
+\end_layout
+
+\begin_layout Plain Layout
+
+    xd,yd,hd = sd
+\end_layout
+
+\begin_layout Plain Layout
+
+    la,ra = a
+\end_layout
+
+\begin_layout Plain Layout
+
+    
+\end_layout
+
+\begin_layout Plain Layout
+
+    # Default probablity is equal to zero
+\end_layout
+
+\begin_layout Plain Layout
+
+    p = 0 
+\end_layout
+
+\begin_layout Plain Layout
+
+    
+\end_layout
+
+\begin_layout Plain Layout
+
+    # If no linear action, s = sd probability equal one
+\end_layout
+
+\begin_layout Plain Layout
+
+    if la == 0:
+\end_layout
+
+\begin_layout Plain Layout
+
+        possible_sd = s
+\end_layout
+
+\begin_layout Plain Layout
+
+        if np.all(s == sd):
+\end_layout
+
+\begin_layout Plain Layout
+
+            p = 1.0
+\end_layout
+
+\begin_layout Plain Layout
+
+    elif la in [1,-1]:
+\end_layout
+
+\begin_layout Plain Layout
+
+        # Treat going backward as going forward in the opposite heading
+\end_layout
+
+\begin_layout Plain Layout
+
+        if la == -1:
+\end_layout
+
+\begin_layout Plain Layout
+
+            ht = (h + 6)%H
+\end_layout
+
+\begin_layout Plain Layout
+
+        else:
+\end_layout
+
+\begin_layout Plain Layout
+
+            ht = h
+\end_layout
+
+\begin_layout Plain Layout
+
+        
+\end_layout
+
+\begin_layout Plain Layout
+
+        # Get ideal translation
+\end_layout
+
+\begin_layout Plain Layout
+
+        dx_ideal,dy_ideal =  get_translation(ht)
+\end_layout
+
+\begin_layout Plain Layout
+
+        # Get translation with plus one heading error
+\end_layout
+
+\begin_layout Plain Layout
+
+        dx_plus,dy_plus =  get_translation(ht+1)
+\end_layout
+
+\begin_layout Plain Layout
+
+        # Get translation with minus one heading error
+\end_layout
+
+\begin_layout Plain Layout
+
+        dx_minus,dy_minus =  get_translation(ht-1)
+\end_layout
+
+\begin_layout Plain Layout
+
+        
+\end_layout
+
+\begin_layout Plain Layout
+
+        # If sd is ideal
+\end_layout
+
+\begin_layout Plain Layout
+
+        if xd == x + dx_ideal and yd == y + dy_ideal:
+\end_layout
+
+\begin_layout Plain Layout
+
+            if hd == (h + ra) %H:
+\end_layout
+
+\begin_layout Plain Layout
+
+                p = 1 - 2 * pe
+\end_layout
+
+\begin_layout Plain Layout
+
+        # If sd is with positive heading error
+\end_layout
+
+\begin_layout Plain Layout
+
+        elif xd == x + dx_plus and yd == y + dy_plus:
+\end_layout
+
+\begin_layout Plain Layout
+
+            if hd == (h + 1 + ra) %H:
+\end_layout
+
+\begin_layout Plain Layout
+
+                p = pe
+\end_layout
+
+\begin_layout Plain Layout
+
+        # If sd is with negative heading error
+\end_layout
+
+\begin_layout Plain Layout
+
+        elif xd == x + dx_minus and yd == y + dy_minus:
+\end_layout
+
+\begin_layout Plain Layout
+
+            if hd == (h - 1 + ra) %H:
+\end_layout
+
+\begin_layout Plain Layout
+
+                p = pe
+\end_layout
+
+\begin_layout Plain Layout
+
+        # if sd is is the same as s
+\end_layout
+
+\begin_layout Plain Layout
+
+        elif xd ==x and yd==y:
+\end_layout
+
+\begin_layout Plain Layout
+
+            # If we are at the edge combine probabilities
+\end_layout
+
+\begin_layout Plain Layout
+
+            if is_outside_grid(x + dx_ideal,y + dy_ideal):
+\end_layout
+
+\begin_layout Plain Layout
+
+                if hd == (h + ra) %H:
+\end_layout
+
+\begin_layout Plain Layout
+
+                    p = p + 1 - 2 * pe
+\end_layout
+
+\begin_layout Plain Layout
+
+            if is_outside_grid(x + dx_plus,y + dy_plus):
+\end_layout
+
+\begin_layout Plain Layout
+
+                if hd == (h + 1 + ra) %H:
+\end_layout
+
+\begin_layout Plain Layout
+
+                    p = p +  pe
+\end_layout
+
+\begin_layout Plain Layout
+
+            if is_outside_grid(x + dx_minus,y + dy_minus):
+\end_layout
+
+\begin_layout Plain Layout
+
+                if hd == (h - 1 + ra) %H:
+\end_layout
+
+\begin_layout Plain Layout
+
+                    p = p +  pe
+\end_layout
+
+\begin_layout Plain Layout
+
+                
+\end_layout
+
+\begin_layout Plain Layout
+
+            
+\end_layout
+
+\begin_layout Plain Layout
+
+    return p
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+1(d) 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+def move(pe,s,a):
+\end_layout
+
+\begin_layout Plain Layout
+
+    # Sample error probability
+\end_layout
+
+\begin_layout Plain Layout
+
+    r = np.random.random()
+\end_layout
+
+\begin_layout Plain Layout
+
+    if r <= 1-2*pe:
+\end_layout
+
+\begin_layout Plain Layout
+
+        rotation_error = 0
+\end_layout
+
+\begin_layout Plain Layout
+
+    elif r<= 1 - pe:
+\end_layout
+
+\begin_layout Plain Layout
+
+        rotation_error = 1
+\end_layout
+
+\begin_layout Plain Layout
+
+    else:
+\end_layout
+
+\begin_layout Plain Layout
+
+        rotation_error = -1
+\end_layout
+
+\begin_layout Plain Layout
+
+        
+\end_layout
+
+\begin_layout Plain Layout
+
+    x,y,h = s
+\end_layout
+
+\begin_layout Plain Layout
+
+    la,ra = a
+\end_layout
+
+\begin_layout Plain Layout
+
+    # if no linear action
+\end_layout
+
+\begin_layout Plain Layout
+
+    if la == 0:
+\end_layout
+
+\begin_layout Plain Layout
+
+        sd = s 
+\end_layout
+
+\begin_layout Plain Layout
+
+    
+\end_layout
+
+\begin_layout Plain Layout
+
+    elif la in [1,-1]:
+\end_layout
+
+\begin_layout Plain Layout
+
+        # Treat going backward as going forward in the opposite heading
+\end_layout
+
+\begin_layout Plain Layout
+
+        if la == -1:
+\end_layout
+
+\begin_layout Plain Layout
+
+            ht = (h + 6)%H
+\end_layout
+
+\begin_layout Plain Layout
+
+        else:
+\end_layout
+
+\begin_layout Plain Layout
+
+            ht = h
+\end_layout
+
+\begin_layout Plain Layout
+
+        # Calculate new heading 
+\end_layout
+
+\begin_layout Plain Layout
+
+        rd = (h+ra+rotation_error)%H
+\end_layout
+
+\begin_layout Plain Layout
+
+        # Calculate new translation
+\end_layout
+
+\begin_layout Plain Layout
+
+        dx,dy =  get_translation(ht+rotation_error)
+\end_layout
+
+\begin_layout Plain Layout
+
+        
+\end_layout
+
+\begin_layout Plain Layout
+
+        xd = x + dx
+\end_layout
+
+\begin_layout Plain Layout
+
+        yd = y + dy
+\end_layout
+
+\begin_layout Plain Layout
+
+        
+\end_layout
+
+\begin_layout Plain Layout
+
+        # if outside grid stay in same place
+\end_layout
+
+\begin_layout Plain Layout
+
+        if is_outside_grid(xd,yd):
+\end_layout
+
+\begin_layout Plain Layout
+
+            xd = x
+\end_layout
+
+\begin_layout Plain Layout
+
+            yd = y
+\end_layout
+
+\begin_layout Plain Layout
+
+        sd = [xd,yd,rd]
+\end_layout
+
+\begin_layout Plain Layout
+
+    return sd
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section*
+2 Planning Problem
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+2(a) 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+def get_reward(s):
+\end_layout
+
+\begin_layout Plain Layout
+
+    # Get reward based on map
+\end_layout
+
+\begin_layout Plain Layout
+
+    x,y,h = s
+\end_layout
+
+\begin_layout Plain Layout
+
+    r = 0
+\end_layout
+
+\begin_layout Plain Layout
+
+    if x ==0 or y ==0 or x == W -1 or y == L -1:
+\end_layout
+
+\begin_layout Plain Layout
+
+        r = -100
+\end_layout
+
+\begin_layout Plain Layout
+
+    elif x == 3 and y in [4,5,6]:
+\end_layout
+
+\begin_layout Plain Layout
+
+        r = -10
+\end_layout
+
+\begin_layout Plain Layout
+
+    elif x == 5 and y == 6:
+\end_layout
+
+\begin_layout Plain Layout
+
+        r = 1
+\end_layout
+
+\begin_layout Plain Layout
+
+    return r
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section*
+3 Policy Iteration
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+3(a) The proposed policy works can be explained as follows.
+ Let the current state of the robot be 
+\begin_inset Formula $(x,y,h)$
+\end_inset
+
+ and the goal location be 
+\begin_inset Formula $(x_{g},y_{g})$
+\end_inset
+
+.
+ The angle between the goal and the current location 
+\begin_inset Formula $a$
+\end_inset
+
+ is calculated as follows 
+\begin_inset Formula 
+\[
+a=\tan^{-1}\frac{x_{g}-x}{y_{g}-y}
+\]
+
+\end_inset
+
+The angle is then rounded to a heading as follows 
+\begin_inset Formula 
+\[
+\hat{h}=\text{round}\frac{12h}{2\pi}
+\]
+
+\end_inset
+
+where 
+\begin_inset Formula $\hat{h}$
+\end_inset
+
+ is the the optimal heading for the robot.
+ Afterwards, we test to see which requires less rotation moving forward
+ or backwards.
+ This is done by finding the smaller between (
+\begin_inset Formula $|h-\hat{h}|)(mod\ 12)$
+\end_inset
+
+ and (
+\begin_inset Formula $|h+6-\hat{h}|)(mod\ 12)$
+\end_inset
+
+, which correspond to the actions of moving forwards and backwards respectively.
+ Once, the linear action is determined, we calculate the required change
+ in headings.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+3(b) 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+horizon = 100
+\end_layout
+
+\begin_layout Plain Layout
+
+def run_plot_policy(Pi,s0,pe,title = None,V = None,goal = [5,6]):
+\end_layout
+
+\begin_layout Plain Layout
+
+    plot_grid()
+\end_layout
+
+\begin_layout Plain Layout
+
+    traj = [s0]
+\end_layout
+
+\begin_layout Plain Layout
+
+    si = state_to_index(s0)
+\end_layout
+
+\begin_layout Plain Layout
+
+    for i in range(horizon):
+\end_layout
+
+\begin_layout Plain Layout
+
+        ai = Pi[si]
+\end_layout
+
+\begin_layout Plain Layout
+
+        a = index_to_action(ai)
+\end_layout
+
+\begin_layout Plain Layout
+
+        s = index_to_state(si)
+\end_layout
+
+\begin_layout Plain Layout
+
+        if V is None:
+\end_layout
+
+\begin_layout Plain Layout
+
+            print(s,a)
+\end_layout
+
+\begin_layout Plain Layout
+
+        else:
+\end_layout
+
+\begin_layout Plain Layout
+
+            print(s,a,V[state_to_index(s)])
+\end_layout
+
+\begin_layout Plain Layout
+
+        if a[0]!=0:
+\end_layout
+
+\begin_layout Plain Layout
+
+            plot_arrow(s[0],s[1],s[2])
+\end_layout
+
+\begin_layout Plain Layout
+
+        sd = move(pe,s,a)
+\end_layout
+
+\begin_layout Plain Layout
+
+        traj.append(sd)
+\end_layout
+
+\begin_layout Plain Layout
+
+        si = int(state_to_index(sd))
+\end_layout
+
+\begin_layout Plain Layout
+
+        
+\end_layout
+
+\begin_layout Plain Layout
+
+        if len(goal)==2:
+\end_layout
+
+\begin_layout Plain Layout
+
+            goal_reached = sd[0] == goal[0] and sd[1] == goal[1]
+\end_layout
+
+\begin_layout Plain Layout
+
+        else:
+\end_layout
+
+\begin_layout Plain Layout
+
+            goal_reached = sd[0] == goal[0] and sd[1] == goal[1] and sd[2]
+ == goal[2]
+\end_layout
+
+\begin_layout Plain Layout
+
+            
+\end_layout
+
+\begin_layout Plain Layout
+
+        if goal_reached:
+\end_layout
+
+\begin_layout Plain Layout
+
+            if V is None:
+\end_layout
+
+\begin_layout Plain Layout
+
+                print(sd)
+\end_layout
+
+\begin_layout Plain Layout
+
+            else:
+\end_layout
+
+\begin_layout Plain Layout
+
+                print(sd,V[state_to_index(s)])
+\end_layout
+
+\begin_layout Plain Layout
+
+            break
+\end_layout
+
+\begin_layout Plain Layout
+
+    if title is not None:
+\end_layout
+
+\begin_layout Plain Layout
+
+        plt.title(title)
+\end_layout
+
+\begin_layout Plain Layout
+
+    plt.show()
+\end_layout
+
+\begin_layout Plain Layout
+
+    return traj
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+3(c) The trajectory obtained is as follows
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+State     Action
+\end_layout
+
+\begin_layout Plain Layout
+
+[1, 6, 6] [1, -1]
+\end_layout
+
+\begin_layout Plain Layout
+
+[1, 5, 5] [1, -1]
+\end_layout
+
+\begin_layout Plain Layout
+
+[1, 4, 4] [1, -1]
+\end_layout
+
+\begin_layout Plain Layout
+
+[2, 4, 3] [1, -1]
+\end_layout
+
+\begin_layout Plain Layout
+
+[3, 4, 2] [1, 0]
+\end_layout
+
+\begin_layout Plain Layout
+
+[4, 4, 2] [1, -1]
+\end_layout
+
+\begin_layout Plain Layout
+
+[5, 4, 1] [1, -1]
+\end_layout
+
+\begin_layout Plain Layout
+
+[5, 5, 0] [1, 0]
+\end_layout
+
+\begin_layout Plain Layout
+
+[5, 6, 0]
+\end_layout
+
+\end_inset
+
+
+\begin_inset Graphics
+	filename latex/output_26_1.png
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+3(d) To speed up the calculation, we use matrix representation.
+ The transition probabilities from state 
+\begin_inset Formula $s$
+\end_inset
+
+ to state 
+\begin_inset Formula $s'$
+\end_inset
+
+, when action 
+\begin_inset Formula $a$
+\end_inset
+
+ is taken is represented using a transistion matrix 
+\begin_inset Formula $P\in R^{N_{S}\times N_{A}\times N_{S}}$
+\end_inset
+
+, where 
+\begin_inset Formula $[P]_{s,a,s'}=p_{sa}(s')$
+\end_inset
+
+.
+ From this matrix, we build the transition probability of the policy 
+\begin_inset Formula $\pi_{0}$
+\end_inset
+
+, 
+\begin_inset Formula $P^{\pi_{0}}\in R^{N_{S}\times N_{S}}$
+\end_inset
+
+ , where 
+\begin_inset Formula $[P^{\pi_{0}}]_{s,s'}=[P]_{s,a^{\pi_{0}},s'}$
+\end_inset
+
+, where 
+\begin_inset Formula $a^{\pi_{0}}=\pi_{0}(s)$
+\end_inset
+
+ is the action taken according to the policy.
+ The value function is then iteratively calculated using the relation
+\begin_inset Formula 
+\[
+V^{(i+1)}=P^{\pi_{0}}(R+\lambda V^{(i)})
+\]
+
+\end_inset
+
+which is equivalent to the relation in the lecture.
+ This procedure stops when 
+\begin_inset Formula $\|V^{(i+1)}-V^{(i)}\|<1e-5$
+\end_inset
+
+.
+\begin_inset Newline newline
+\end_inset
+
+
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+def eval_policy(P,R,P_Pi,lb,V=None):
+\end_layout
+
+\begin_layout Plain Layout
+
+    if V is None:
+\end_layout
+
+\begin_layout Plain Layout
+
+        V = np.zeros_like(R)
+\end_layout
+
+\begin_layout Plain Layout
+
+    for itr in range(500):
+\end_layout
+
+\begin_layout Plain Layout
+
+        V_prev = np.copy(V)
+\end_layout
+
+\begin_layout Plain Layout
+
+        V = P_Pi@(R + lb * V)
+\end_layout
+
+\begin_layout Plain Layout
+
+        if (np.linalg.norm(V-V_prev))<1e-5:
+\end_layout
+
+\begin_layout Plain Layout
+
+            break
+\end_layout
+
+\begin_layout Plain Layout
+
+    return V
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+3(e) 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+State     Action   Value
+\end_layout
+
+\begin_layout Plain Layout
+
+[1, 6, 6] [1, -1] -2.2563279796020335
+\end_layout
+
+\begin_layout Plain Layout
+
+[1, 5, 5] [1, -1] -2.507031079602033
+\end_layout
+
+\begin_layout Plain Layout
+
+[1, 4, 4] [1, -1] -2.7855900796020325
+\end_layout
+
+\begin_layout Plain Layout
+
+[2, 4, 3] [1, -1] -3.0951000796020325
+\end_layout
+
+\begin_layout Plain Layout
+
+[3, 4, 2] [1, 0] -3.439000079602031
+\end_layout
+
+\begin_layout Plain Layout
+
+[4, 4, 2] [1, -1] 7.2899999203979675
+\end_layout
+
+\begin_layout Plain Layout
+
+[5, 4, 1] [1, -1] 8.099999920397968
+\end_layout
+
+\begin_layout Plain Layout
+
+[5, 5, 0] [1, 0] 8.999999920397968
+\end_layout
+
+\begin_layout Plain Layout
+
+[5, 6, 0] 8.999999920397968 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+3(f) Once, the value function converges, the policy is calculated by finding
+ the action that is most likely to end up in a state with higher value.
+ This is again implemented using matrices as follows
+\begin_inset Formula 
+\[
+V_{A}=P(R+\lambda V)
+\]
+
+\end_inset
+
+where 
+\begin_inset Formula $V_{A}\in R^{N_{S}\times N_{A}}$
+\end_inset
+
+ and 
+\begin_inset Formula $[V_{A}]_{s,a}$
+\end_inset
+
+represents the one step value of action 
+\begin_inset Formula $a$
+\end_inset
+
+ when in state 
+\begin_inset Formula $s$
+\end_inset
+
+.
+ By calculating the index of the element which maximizes each row, we determine
+ the optimal policy.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+3(g) Policy iteration is implemented by iteratively calculating the value
+ function of the policy and then estimating the policy from the value function.
+ Stopping occurs when the policy stops changing.
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+def run_policy_iteration(P,pi,R):
+\end_layout
+
+\begin_layout Plain Layout
+
+    pi = pi0
+\end_layout
+
+\begin_layout Plain Layout
+
+    V = np.zeros((len(state_space)))
+\end_layout
+
+\begin_layout Plain Layout
+
+    for i in range(100):
+\end_layout
+
+\begin_layout Plain Layout
+
+        pi_prev = np.copy(pi)
+\end_layout
+
+\begin_layout Plain Layout
+
+        P_pi = calc_P_Pi(P,pi)
+\end_layout
+
+\begin_layout Plain Layout
+
+        V = eval_policy(P,R,P_pi,lb,V)
+\end_layout
+
+\begin_layout Plain Layout
+
+        pi = get_Pi_from_V(V,P,R)
+\end_layout
+
+\begin_layout Plain Layout
+
+        # Stop when policy stops changing
+\end_layout
+
+\begin_layout Plain Layout
+
+        if np.all(pi==pi_prev):
+\end_layout
+
+\begin_layout Plain Layout
+
+            break
+\end_layout
+
+\begin_layout Plain Layout
+
+    return pi,V
+\end_layout
+
+\end_inset
+
+
+\begin_inset Newpage pagebreak
+\end_inset
+
+
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+3(h) The optimal trajectory is as follows
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+State     Action   Values
+\end_layout
+
+\begin_layout Plain Layout
+
+[1, 6, 6] [1, -1] 3.874204889999864
+\end_layout
+
+\begin_layout Plain Layout
+
+[1, 5, 5] [1, -1] 4.304672099999864
+\end_layout
+
+\begin_layout Plain Layout
+
+[1, 4, 4] [1, 1] 4.782968999999865
+\end_layout
+
+\begin_layout Plain Layout
+
+[2, 4, 5] [1, -1] 5.314409999999865
+\end_layout
+
+\begin_layout Plain Layout
+
+[2, 3, 4] [1, -1] 5.9048999999998655
+\end_layout
+
+\begin_layout Plain Layout
+
+[3, 3, 3] [1, -1] 6.560999999999866
+\end_layout
+
+\begin_layout Plain Layout
+
+[4, 3, 2] [1, -1] 7.289999999999867
+\end_layout
+
+\begin_layout Plain Layout
+
+[5, 3, 1] [1, -1] 8.099999999999866
+\end_layout
+
+\begin_layout Plain Layout
+
+[5, 4, 0] [1, -1] 8.999999999999867
+\end_layout
+
+\begin_layout Plain Layout
+
+[5, 5, 11] [1, -1] 9.999999999999867
+\end_layout
+
+\begin_layout Plain Layout
+
+[5, 6, 10] 9.999999999999867 
+\end_layout
+
+\end_inset
+
+
+\begin_inset Graphics
+	filename latex/output_40_1.png
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+3(i) It took 0.083 seconds.
+ This speed is due to the efficiency of matrix arithmetics compared to implement
+ing the code entirely using for loops.
+\end_layout
+
+\begin_layout Section*
+4 Value Iteration
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+4(a) Value iteration is calculated as follows
+\begin_inset Formula 
+\[
+V^{(i+1)}=\max\left(P(R+\lambda V^{(i)})\right)
+\]
+
+\end_inset
+
+Similarly, as stated earlier, 
+\begin_inset Formula $P(R+\lambda V^{(i)})$
+\end_inset
+
+ calculates the value of all possible action, by taking the maximum over
+ the last dimension, we choose the value associated with the action yielding
+ the largest reward for each state.
+ This process is run iteratively until 
+\begin_inset Formula $\|V^{(i+1)}-V^{(i)}\|<1e-6$
+\end_inset
+
+.
+ Then the policy is calculated from the value function as discussed earlier.
+\begin_inset Newpage pagebreak
+\end_inset
+
+
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+4(b) The optimal trajectory is as follows
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+State     Action   Values
+\end_layout
+
+\begin_layout Plain Layout
+
+[1, 6, 6] [1, -1] 3.8739392760111255
+\end_layout
+
+\begin_layout Plain Layout
+
+[1, 5, 5] [1, -1] 4.304406486011126
+\end_layout
+
+\begin_layout Plain Layout
+
+[1, 4, 4] [1, 1] 4.782703386011126
+\end_layout
+
+\begin_layout Plain Layout
+
+[2, 4, 5] [1, -1] 5.314144386011125
+\end_layout
+
+\begin_layout Plain Layout
+
+[2, 3, 4] [1, -1] 5.904634386011125
+\end_layout
+
+\begin_layout Plain Layout
+
+[3, 3, 3] [1, -1] 6.560734386011125
+\end_layout
+
+\begin_layout Plain Layout
+
+[4, 3, 2] [1, -1] 7.289734386011126
+\end_layout
+
+\begin_layout Plain Layout
+
+[5, 3, 1] [1, -1] 8.099734386011127
+\end_layout
+
+\begin_layout Plain Layout
+
+[5, 4, 0] [1, -1] 8.999734386011127
+\end_layout
+
+\begin_layout Plain Layout
+
+[5, 5, 11] [1, -1] 9.999734386011127
+\end_layout
+
+\begin_layout Plain Layout
+
+[5, 6, 10] 9.999734386011127 
+\end_layout
+
+\end_inset
+
+
+\begin_inset Graphics
+	filename latex/output_40_1.png
+
+\end_inset
+
+
+\begin_inset Newline newline
+\end_inset
+
+This is the same results as policy iteration.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+4(c) It took 0.23 seconds, which is slower than value iteration.
+\begin_inset Newpage pagebreak
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section*
+5 Additional Scenarios
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+5(a) The trajecory obtained with 
+\begin_inset Formula $p_{e}=0.25$
+\end_inset
+
+, when simulated with 
+\begin_inset Formula $p_{e}=0.0$
+\end_inset
+
+
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+State     Action   Values
+\end_layout
+
+\begin_layout Plain Layout
+
+[1, 6, 6] [1, -1] 0.010984154440706925
+\end_layout
+
+\begin_layout Plain Layout
+
+[1, 5, 5] [1, 0] 0.024409452996222856
+\end_layout
+
+\begin_layout Plain Layout
+
+[1, 4, 5] [1, -1] 0.0465721178401001
+\end_layout
+
+\begin_layout Plain Layout
+
+[1, 3, 4] [1, 0] 0.09385261525517856
+\end_layout
+
+\begin_layout Plain Layout
+
+[2, 3, 4] [1, 0] 0.19091342513711002
+\end_layout
+
+\begin_layout Plain Layout
+
+[3, 3, 4] [1, 0] 0.3744448586015376
+\end_layout
+
+\begin_layout Plain Layout
+
+[4, 3, 4] [1, 1] 0.7354133458969652
+\end_layout
+
+\begin_layout Plain Layout
+
+[5, 3, 5] [-1, 0] 1.4443058614494937
+\end_layout
+
+\begin_layout Plain Layout
+
+[5, 4, 5] [-1, 0] 2.8418735569457123
+\end_layout
+
+\begin_layout Plain Layout
+
+[5, 5, 5] [-1, 0] 5.605460633540854
+\end_layout
+
+\begin_layout Plain Layout
+
+[5, 6, 5] 5.605460633540854 
+\end_layout
+
+\end_inset
+
+
+\begin_inset Graphics
+	filename latex/output_51_1.png
+
+\end_inset
+
+
+\begin_inset Newpage pagebreak
+\end_inset
+
+
+\begin_inset Newline newline
+\end_inset
+
+The same policy was simulated under 
+\begin_inset Formula $p_{e}=0.25$
+\end_inset
+
+
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+State     Action   Values
+\end_layout
+
+\begin_layout Plain Layout
+
+[1, 6, 6] [1, -1] 0.010984154440706925
+\end_layout
+
+\begin_layout Plain Layout
+
+[1, 5, 5] [1, 0] 0.024409452996222856
+\end_layout
+
+\begin_layout Plain Layout
+
+[1, 4, 5] [1, -1] 0.0465721178401001
+\end_layout
+
+\begin_layout Plain Layout
+
+[1, 3, 4] [1, 0] 0.09385261525517856
+\end_layout
+
+\begin_layout Plain Layout
+
+[2, 3, 4] [1, 0] 0.19091342513711002
+\end_layout
+
+\begin_layout Plain Layout
+
+[3, 3, 3] [1, -1] 0.3685578510811644
+\end_layout
+
+\begin_layout Plain Layout
+
+[4, 3, 2] [1, -1] 0.8190211105507688
+\end_layout
+
+\begin_layout Plain Layout
+
+[5, 3, 1] [1, 0] 1.4443058614494937
+\end_layout
+
+\begin_layout Plain Layout
+
+[6, 3, 2] [-1, -1] 0.7354133458969652
+\end_layout
+
+\begin_layout Plain Layout
+
+[5, 3, 1] [1, 0] 1.4443058614494937
+\end_layout
+
+\begin_layout Plain Layout
+
+[6, 3, 2] [-1, -1] 0.7354133458969652
+\end_layout
+
+\begin_layout Plain Layout
+
+[5, 3, 1] [1, 0] 1.4443058614494937
+\end_layout
+
+\begin_layout Plain Layout
+
+[5, 4, 1] [1, 0] 2.8418735569457123
+\end_layout
+
+\begin_layout Plain Layout
+
+[5, 5, 1] [1, 0] 5.605460633540854
+\end_layout
+
+\begin_layout Plain Layout
+
+[5, 6, 1] 5.605460633540854
+\end_layout
+
+\end_inset
+
+
+\begin_inset Graphics
+	filename latex/output_51_3.png
+
+\end_inset
+
+
+\begin_inset Newline newline
+\end_inset
+
+Additional attemps exist with the code.
+\begin_inset Newpage pagebreak
+\end_inset
+
+
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+5(b) Policy derived under 
+\begin_inset Formula $p_{e}=0$
+\end_inset
+
+
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+State     Action   Values
+\end_layout
+
+\begin_layout Plain Layout
+
+[1, 6, 6] [1, -1] 3.8739392760111255
+\end_layout
+
+\begin_layout Plain Layout
+
+[1, 5, 5] [1, -1] 4.304406486011126
+\end_layout
+
+\begin_layout Plain Layout
+
+[1, 4, 4] [1, 1] 4.782703386011126
+\end_layout
+
+\begin_layout Plain Layout
+
+[2, 4, 5] [1, -1] 5.314144386011125
+\end_layout
+
+\begin_layout Plain Layout
+
+[2, 3, 4] [1, -1] 5.904634386011125
+\end_layout
+
+\begin_layout Plain Layout
+
+[3, 3, 3] [1, 1] 6.560734386011125
+\end_layout
+
+\begin_layout Plain Layout
+
+[4, 3, 4] [1, 1] 7.289734386011126
+\end_layout
+
+\begin_layout Plain Layout
+
+[5, 3, 5] [-1, 0] 8.099734386011127
+\end_layout
+
+\begin_layout Plain Layout
+
+[5, 4, 5] [-1, 0] 8.999734386011127
+\end_layout
+
+\begin_layout Plain Layout
+
+[5, 5, 5] [-1, 1] 9.999734386011127
+\end_layout
+
+\begin_layout Plain Layout
+
+[5, 6, 6] 9.999734386011127 
+\end_layout
+
+\end_inset
+
+
+\begin_inset Graphics
+	filename latex/output_55_1.png
+
+\end_inset
+
+
+\begin_inset Newpage pagebreak
+\end_inset
+
+
+\begin_inset Newline newline
+\end_inset
+
+Policy derived under 
+\begin_inset Formula $p_{e}=0.25$
+\end_inset
+
+ and simulated under 
+\begin_inset Formula $p_{e}=0.0$
+\end_inset
+
+
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+State     Action   Values
+\end_layout
+
+\begin_layout Plain Layout
+
+[1, 6, 6] [1, -1] 0.010268633842907816
+\end_layout
+
+\begin_layout Plain Layout
+
+[1, 5, 5] [1, 0] 0.022819390384762186
+\end_layout
+
+\begin_layout Plain Layout
+
+[1, 4, 5] [1, -1] 0.04352411073093901
+\end_layout
+
+\begin_layout Plain Layout
+
+[1, 3, 4] [1, 0] 0.08841568889149103
+\end_layout
+
+\begin_layout Plain Layout
+
+[2, 3, 4] [1, 0] 0.18007546085183612
+\end_layout
+
+\begin_layout Plain Layout
+
+[3, 3, 4] [1, 0] 0.3542270721848851
+\end_layout
+
+\begin_layout Plain Layout
+
+[4, 3, 4] [1, 1] 0.6982187410682301
+\end_layout
+
+\begin_layout Plain Layout
+
+[5, 3, 5] [-1, 0] 1.3746535661635437
+\end_layout
+
+\begin_layout Plain Layout
+
+[5, 4, 5] [-1, 0] 2.705687299687513
+\end_layout
+
+\begin_layout Plain Layout
+
+[5, 5, 5] [-1, 1] 5.338767253533646
+\end_layout
+
+\begin_layout Plain Layout
+
+[5, 6, 6] 5.338767253533646
+\end_layout
+
+\end_inset
+
+
+\begin_inset Graphics
+	filename latex/output_56_1.png
+
+\end_inset
+
+
+\begin_inset Newpage pagebreak
+\end_inset
+
+
+\begin_inset Newline newline
+\end_inset
+
+Policy derived under 
+\begin_inset Formula $p_{e}=0.25$
+\end_inset
+
+ and simulated under 
+\begin_inset Formula $p_{e}=0.25$
+\end_inset
+
+
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+State     Action   Values
+\end_layout
+
+\begin_layout Plain Layout
+
+[1, 6, 6] [1, -1] 0.010268633842907816
+\end_layout
+
+\begin_layout Plain Layout
+
+[1, 5, 5] [1, 0] 0.022819390384762186
+\end_layout
+
+\begin_layout Plain Layout
+
+[1, 4, 5] [1, -1] 0.04352411073093901
+\end_layout
+
+\begin_layout Plain Layout
+
+[2, 4, 3] [-1, -1] 0.016610468982580617
+\end_layout
+
+\begin_layout Plain Layout
+
+[1, 4, 1] [1, -1] 0.0250569261542019
+\end_layout
+
+\begin_layout Plain Layout
+
+[1, 5, 0] [-1, -1] 0.019557825969582443
+\end_layout
+
+\begin_layout Plain Layout
+
+[1, 4, 11] [-1, -1] 0.04346215698909649
+\end_layout
+
+\begin_layout Plain Layout
+
+[2, 4, 9] [1, -1] 0.018140353496299094
+\end_layout
+
+\begin_layout Plain Layout
+
+[1, 4, 7] [-1, -1] 0.026766211266061494
+\end_layout
+
+\begin_layout Plain Layout
+
+[2, 4, 7] [1, 1] 0.0797903868924374
+\end_layout
+
+\begin_layout Plain Layout
+
+[2, 3, 8] [-1, 1] 0.16672923626176886
+\end_layout
+
+\begin_layout Plain Layout
+
+[3, 3, 10] [-1, -1] 0.2110236980204284
+\end_layout
+
+\begin_layout Plain Layout
+
+[4, 3, 9] [-1, -1] 0.415336770600533
+\end_layout
+
+\begin_layout Plain Layout
+
+[5, 3, 7] [-1, 0] 1.3746535661635437
+\end_layout
+
+\begin_layout Plain Layout
+
+[5, 4, 7] [-1, 0] 2.705687299687513
+\end_layout
+
+\begin_layout Plain Layout
+
+[5, 5, 7] [-1, -1] 5.338767253533646
+\end_layout
+
+\begin_layout Plain Layout
+
+[5, 6, 5] 5.338767253533646 
+\end_layout
+
+\end_inset
+
+
+\begin_inset Graphics
+	filename latex/output_56_3.png
+
+\end_inset
+
+
+\begin_inset Newline newline
+\end_inset
+
+Additional attempts exist in the code.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+5(c) By examining all realization under 
+\begin_inset Formula $p_{e}=0.25$
+\end_inset
+
+, the optimal policy manages to avoid hitting the red and yellow squares
+ entirely.
+ The number of steps needed to reach the goal increases when we restrict
+ the reward to once specific heading.
+\end_layout
+
+\end_body
+\end_document
