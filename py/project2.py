@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[1]:
+# In[2]:
 
 
 import numpy as np
@@ -13,7 +13,7 @@ import time
 import copy
 
 
-# In[2]:
+# In[3]:
 
 
 wheel_radius = 0.025
@@ -22,10 +22,10 @@ tail_dist = 0.075
 robot_height = tail_dist  + wheel_radius
 
 
-# In[3]:
+# In[22]:
 
 
-def show_world(obstacles = [[[0.5,0.5],[0.1,0.5]], [[0.8,0.5],[0.01,0.03]]],oneway = None,dimensions = [2,2]):
+def show_world(obstacles = [[[0.5,0.5],[0.1,0.5]], [[0.8,0.5],[0.01,0.03]]],oneway = None, target = None,dimensions = [2,2]):
     plt.rcParams['figure.dpi'] = 300
     fig = plt.figure()
     ax=fig.add_subplot(111)
@@ -37,6 +37,9 @@ def show_world(obstacles = [[[0.5,0.5],[0.1,0.5]], [[0.8,0.5],[0.01,0.03]]],onew
     if oneway is not None:
         for ow in oneway:
             ax.add_patch(patches.Rectangle((ow[0][0],ow[0][1]),ow[1][0],ow[1][1],color='y'))
+    if target is not None:
+        
+        ax.add_patch(patches.Rectangle((target[0][0],target[0][1]),target[1][0],target[1][1],color='g'))
 
     plt.axis([0,dimensions[0],0,dimensions[1]])
 #         plt.axis('equal')
@@ -57,7 +60,7 @@ ax = show_world()
 plot_robot([1,1,np.pi/2],ax)
 
 
-# In[4]:
+# In[5]:
 
 
 def get_angle_diff(a1,a2):
@@ -87,7 +90,7 @@ print(metric([1,1,0],[1,1,np.pi/4]))
 print(metric([1,1,0],[1,1,-np.pi/4]))
 
 
-# In[5]:
+# In[6]:
 
 
 w_wheel_rpm = 60
@@ -100,7 +103,7 @@ v_robot = v_wheel
 print(v_robot,w_robot)
 
 
-# In[6]:
+# In[7]:
 
 
 def plan_trajectory(xi,xt):
@@ -119,7 +122,7 @@ print(plan_trajectory([1,1,0],[1,0,-np.pi]))
 print(plan_trajectory([1,1,0],[2,2,-np.pi]))  
 
 
-# In[7]:
+# In[8]:
 
 
 def time_trajectory(xi,xt):
@@ -139,7 +142,7 @@ print(time_trajectory([1,1,0],[1,0,-np.pi]))
 print(time_trajectory([1,1,0],[2,2,-np.pi]))  
 
 
-# In[8]:
+# In[9]:
 
 
 def execute_trajectory(xi,xt,duration = 1):
@@ -224,7 +227,7 @@ print(time_trajectory([1,1,0],[2,2,-np.pi]))
 print(execute_trajectory([1,1,0],[2,2,-np.pi])) 
 
 
-# In[9]:
+# In[10]:
 
 
 # https://math.stackexchange.com/questions/261336/intersection-between-a-rectangle-and-a-circle
@@ -273,7 +276,7 @@ def interset_circle_obstacle(c,r,obstacle):
 interset_circle_obstacle([0,0],1,[[-2,-2],[5,5]])
 
 
-# In[54]:
+# In[11]:
 
 
 def intersect_line_obstacle(xi,dist,theta,obstacle):
@@ -333,7 +336,7 @@ def intersect_line_obstacle(xi,dist,theta,obstacle):
 # intersect_line_obstacle(xi,traj[1]+ furthest_point_robot,traj[0],obstacles_list[0])
 
 
-# In[14]:
+# In[12]:
 
 
 def check_path_for_collision_old(xi,path,obstacle):
@@ -360,7 +363,7 @@ def check_path_for_collision_old(xi,path,obstacle):
 # check_path_for_collision ([0,0],[np.pi/2,10,0], [[-1,1],[1,1]])
 
 
-# In[52]:
+# In[13]:
 
 
 def check_path_for_collision(xi,path,obstacle):
@@ -382,28 +385,28 @@ def check_path_for_collision(xi,path,obstacle):
 check_path_for_collision ([0,0],[np.pi/2,10,0], [[-1,1],[2,2]])
 
 
-# In[53]:
+# In[16]:
 
 
-xi=[0.29044650718618625, 0.8134124653073828, 0.4414837032879717]
-x_new=[0.4442578458945158, 0.8234742290622096, 0.06532319517138596]
-traj=[0.06532319517138596, 0.1541400888967773, 0]
-xr=[0.5939287392181722, 1.360055908243145, 5.915713127729529]
+# xi=[0.29044650718618625, 0.8134124653073828, 0.4414837032879717]
+# x_new=[0.4442578458945158, 0.8234742290622096, 0.06532319517138596]
+# traj=[0.06532319517138596, 0.1541400888967773, 0]
+# xr=[0.5939287392181722, 1.360055908243145, 5.915713127729529]
 
 
 
-# print(xi,xr)
-print(execute_trajectory(xi,xr))
-traj,_,xn = execute_trajectory(xi,xr)
-print("traj",traj)
-print("xn",xn)
-print(check_path_for_collision(xi,traj,obstacles_list[-1]))
+# # print(xi,xr)
+# print(execute_trajectory(xi,xr))
+# traj,_,xn = execute_trajectory(xi,xr)
+# print("traj",traj)
+# print("xn",xn)
+# print(check_path_for_collision(xi,traj,obstacles_list[-1]))
 
-print("obs",xx1,xx3,xx2,xx4)
-intersect_line_obstacle(xi,traj[1],traj[0],obstacles_list[-1])
+# print("obs",xx1,xx3,xx2,xx4)
+# intersect_line_obstacle(xi,traj[1],traj[0],obstacles_list[-1])
 
 
-# In[18]:
+# In[17]:
 
 
 def check_path_for_collisions(xi,path,obstacles):
@@ -422,12 +425,12 @@ def check_path_for_collisions(xi,path,obstacles):
 check_path_for_collisions ([0,0],[np.pi/2,10,0], [ [[-1,1],[1,1]], [[-1,5],[1,1]] ])
 
 
-# In[19]:
+# In[23]:
 
 
 n_obstacles = 10
 world_size = 2
-np.random.seed(59711)
+np.random.seed(563121)
 obstacle_positions = np.random.uniform(0.2,world_size-0.2,[n_obstacles,2]).tolist()
 obstacle_dims = np.random.uniform(0.15,0.6,[n_obstacles,2]).tolist()
 
@@ -436,8 +439,9 @@ for i in range(n_obstacles):
     obstacles_list.append([obstacle_positions[i],obstacle_dims[i]])
 
 # obstacles_list= [[[0.5,0.5],[1,1]]]
-    
-ax = show_world(obstacles_list,dimensions=[world_size,world_size])
+
+target = [[0,1.5],[0.5,0.5]]
+ax = show_world(obstacles_list,target = target,dimensions=[world_size,world_size])
 plot_robot([1,1,np.pi/2],ax)
 
 
@@ -454,16 +458,28 @@ xx4 = xx2 + 0.34382102230701117
     
 
 
-# In[56]:
+# In[75]:
+
+
+def plot_rrt_evol(E):
+    ax = show_world(obstacles_list,target=target)      
+    for e in E:
+        ae = np.array(e)
+        plt.plot(ae[:,0],ae[:,1],'b',linewidth =0.1)
+    
+
+
+# In[31]:
 
 
 np.random.seed(0)
-n_points = 10000
+n_points = 20000
 # ax = show_world(obstacles_list)
 xi = [1,0.25,0]
 V = [xi]
 E = []
 C = []
+target_found = False
 for i in range(n_points):
     xr = [np.random.uniform(0,world_size),np.random.uniform(0,world_size),np.random.uniform(0,2*np.pi)]
     d_min = 1000
@@ -484,26 +500,65 @@ for i in range(n_points):
             
         V.append(x_new)
         E.append([x_min,x_new])
-        if x_new[0]>xx1 and x_new[0]<xx3 and x_new[1]>xx2 and x_new[1]<xx4:
-            print("x_min",x_min); print("x_new",x_new); print("traj",traj); print("xr",xr); print("collision", collision)
-            ax = show_world(obstacles_list)      
-            for e in E:
-                ae = np.array(e)
-                plt.plot(ae[:,0],ae[:,1],'b',linewidth =0.1)
-            ae = np.array(E[-1])
-            plt.plot(ae[:,0],ae[:,1],'r',linewidth =0.2)
+        
+        if x_new[0]>target[0][0] and x_new[0]<target[0][0]+target[1][0] and x_new[1]>target[0][1] and x_new[1]<target[0][1]+target[1][1]:
+            print("Target Found")
+            print(x_new)
+            x_final = x_new
             break
+#         if x_new[0]>xx1 and x_new[0]<xx3 and x_new[1]>xx2 and x_new[1]<xx4:
+#             print("x_min",x_min); print("x_new",x_new); print("traj",traj); print("xr",xr); print("collision", collision)
+#             ax = show_world(obstacles_list)      
+#             for e in E:
+#                 ae = np.array(e)
+#                 plt.plot(ae[:,0],ae[:,1],'b',linewidth =0.1)
+#             ae = np.array(E[-1])
+#             plt.plot(ae[:,0],ae[:,1],'r',linewidth =0.2)
+#             break
 #         print(x,x_new,traj)
 #         ae = np.array([x,x_new])
 #         ax = show_world(obstacles_list)
 #         plt.plot(ae[:,0],ae[:,1],'b')
 #         plt.show()
-    if i%1000==0 or i==n_points -1:
-        ax = show_world(obstacles_list)      
-        for e in E:
-            ae = np.array(e)
-            plt.plot(ae[:,0],ae[:,1],'b',linewidth =0.1)
+    if i%2000==0 or i==n_points -1:
+         plot_rrt_evol(E)
         plt.show()
+plot_rrt_evol(E)
+plt.show()
+
+
+# In[71]:
+
+
+def find_parent(e):
+    return np.where((Ev[:,1,:]==e).all(axis =1))[0][0]
+Ev = np.array(E)
+print(Ev.shape)
+Ef = Ev[-1,:,:]
+print(Ef[0])
+print(find_parent(Ef[0]))
+
+def build_tree():
+    edge_list = []
+    x = Ev[-1,1,:]
+    while  np.all(x!=np.array(xi)):
+        par_indx = find_parent(x)
+        edge_list.insert(0,par_indx)
+        x = Ev[par_indx,0]
+#         print(edge_list)
+    return edge_list
+edge_list = build_tree()
+
+
+# In[77]:
+
+
+plot_rrt_evol(E)
+for indx in edge_list:
+    e = E[indx]
+    ae = np.array(e)
+    plt.plot(ae[:,0],ae[:,1],'r',linewidth =0.2)
+plt.show()
 
 
 # In[ ]:
