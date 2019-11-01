@@ -60,7 +60,7 @@ ax = show_world()
 plot_robot([1,1,np.pi/2],ax)
 
 
-# In[5]:
+# In[110]:
 
 
 def get_angle_diff(a1,a2):
@@ -76,21 +76,8 @@ def get_dist_diff(c1,c2):
     dist = np.sqrt(((c1[0] - c2[0])**2 + (c1[1] - c2[1])**2))
     return dist
 
-def metric(c1,c2):
-    dist = get_dist_diff(c1,c2)
-    ang = get_angle_diff(c1[2],c2[2])
-    
-    rot_dist =  np.abs(ang) * wheel_radius
-    
-    metric = dist + rot_dist
-    return metric
-print(metric([1,1,0],[2,1,0]))
 
-print(metric([1,1,0],[1,1,np.pi/4]))
-print(metric([1,1,0],[1,1,-np.pi/4]))
-
-
-# In[6]:
+# In[79]:
 
 
 w_wheel_rpm = 60
@@ -103,11 +90,11 @@ v_robot = v_wheel
 print(v_robot,w_robot)
 
 
-# In[7]:
+# In[94]:
 
 
 def plan_trajectory(xi,xt):
-    ang_points = np.pi/2 - np.arctan2(xt[1] - xi[1], xt[0] - xi[0])
+    ang_points =  np.arctan2(xt[1] - xi[1], xt[0] - xi[0])
     ang1 = get_angle_diff(xi[2],ang_points) 
 
     dist = get_dist_diff(xi,xt)
@@ -122,11 +109,11 @@ print(plan_trajectory([1,1,0],[1,0,-np.pi]))
 print(plan_trajectory([1,1,0],[2,2,-np.pi]))  
 
 
-# In[8]:
+# In[97]:
 
 
 def time_trajectory(xi,xt):
-    ang_points = np.pi/2 - np.arctan2(xt[1] - xi[1], xt[0] - xi[0])
+    ang_points = np.arctan2(xt[1] - xi[1], xt[0] - xi[0])
     ang1 = get_angle_diff(xi[2],ang_points) 
     t = np.abs(ang1/w_robot)
 
@@ -137,12 +124,31 @@ def time_trajectory(xi,xt):
     t += np.abs(ang2/w_robot)
     return [[ang1,dist,ang2],t]
      
-print(time_trajectory([1,1,0],[1,2,0]))        
+print(time_trajectory([1,1,np.pi/2],[1,2,np.pi]))        
 print(time_trajectory([1,1,0],[1,0,-np.pi]))  
 print(time_trajectory([1,1,0],[2,2,-np.pi]))  
 
 
-# In[9]:
+# In[111]:
+
+
+def metric(c1,c2):
+#     dist = get_dist_diff(c1,c2)
+#     ang = get_angle_diff(c1[2],c2[2])
+    
+#     rot_dist =  np.abs(ang) * wheel_sep
+    
+#     metric = dist + rot_dist
+    
+    return time_trajectory(c1,c2)[-1]
+
+print(metric([1,1,0],[2,1,0]))
+
+print(metric([1,1,0],[1,1,np.pi/4]))
+print(metric([1,1,0],[1,1,-np.pi/4]))
+
+
+# In[164]:
 
 
 def execute_trajectory(xi,xt,duration = 1):
@@ -153,7 +159,7 @@ def execute_trajectory(xi,xt,duration = 1):
     control_seq = [[0,0,0]]
     x_end = copy.deepcopy(xi)
     
-    ang_points = np.pi/2 - np.arctan2(xt[1] - xi[1], xt[0] - xi[0])
+    ang_points =  np.arctan2(xt[1] - xi[1], xt[0] - xi[0])
     ang1 = get_angle_diff(xi[2],ang_points) 
     if ang1!=0:
         t_ang1 = np.abs(ang1/w_robot)
@@ -165,12 +171,12 @@ def execute_trajectory(xi,xt,duration = 1):
             ang1 = w_robot*duration*np.sign(ang1)
             control_seq[-1][2] = duration
             t = duration
-            x_end[2] = ang1
+            x_end[2] = xi[2] + ang1
             return [[ang1,dist,ang2],control_seq,x_end]
         else:
             control_seq[-1][2] = t_ang1
             t = t_ang1
-            x_end[2] = ang1
+            x_end[2] = xi[2] + ang1
             control_seq.append([0,0,0])
     
     dist = get_dist_diff(xi,xt)
@@ -181,16 +187,16 @@ def execute_trajectory(xi,xt,duration = 1):
         control_seq[-1][1] = w_wheel_rpm
         if  t + t_dist>duration:
             dist = v_robot* (duration - t)
-            x_end[0] += dist*np.cos(ang1)
-            x_end[1] += dist*np.sin(ang1)
+            x_end[0] += dist*np.cos(x_end[2])
+            x_end[1] += dist*np.sin(x_end[2])
             t_dist = duration - t
             control_seq[-1][2] = t_dist
             return [[ang1,dist,ang2],control_seq,x_end]
         else:
             control_seq[-1][2] = t_dist
             t = t + t_dist
-            x_end[0] += dist*np.cos(ang1)
-            x_end[1] += dist*np.sin(ang1)
+            x_end[0] += dist*np.cos(x_end[2])
+            x_end[1] += dist*np.sin(x_end[2])
             control_seq.append([0,0,0])
     
     ang2 =  get_angle_diff(ang_points,xt[2])
@@ -201,13 +207,13 @@ def execute_trajectory(xi,xt,duration = 1):
         if t + t_ang1>duration:
             ang2 = w_robot*np.sign(ang2)
             control_seq[-1][2] = duration - t
-            x_end[2] = ang2
+            x_end[2] = x_end[2] + ang2
             t = duration
             return [[ang1,dist,ang2],control_seq,x_end]
         else:
             control_seq[-1][2] = t_ang2
             t = t + t_ang1
-            x_end[2] = ang2
+            x_end[2] = x_end[2] + ang2
             control_seq.append([0,0,0])
             control_seq[-1][2] = duration - t
 
@@ -227,7 +233,16 @@ print(time_trajectory([1,1,0],[2,2,-np.pi]))
 print(execute_trajectory([1,1,0],[2,2,-np.pi])) 
 
 
-# In[10]:
+print()
+print(time_trajectory([0,0,np.pi/2],[-10,10,-np.pi]))  
+print(execute_trajectory([0,0,0],[-10,10,-np.pi])) 
+
+#  s [1.0074272458687608, 0.33980059164984955, 1.4882759426619756] traj [0.769366278000079, 0.12245815016948611, 0] end [1.0953952639734506, 0.4249922950819641, 2.2576422206620546]
+print()
+print(execute_trajectory([1.0074272458687608, 0.33980059164984955, 1.4882759426619756],[0.23654885173786644, 1.2798420426550476, 0.9007152691844127])) 
+
+
+# In[128]:
 
 
 # https://math.stackexchange.com/questions/261336/intersection-between-a-rectangle-and-a-circle
@@ -276,7 +291,7 @@ def interset_circle_obstacle(c,r,obstacle):
 interset_circle_obstacle([0,0],1,[[-2,-2],[5,5]])
 
 
-# In[11]:
+# In[129]:
 
 
 def intersect_line_obstacle(xi,dist,theta,obstacle):
@@ -336,7 +351,7 @@ def intersect_line_obstacle(xi,dist,theta,obstacle):
 # intersect_line_obstacle(xi,traj[1]+ furthest_point_robot,traj[0],obstacles_list[0])
 
 
-# In[12]:
+# In[115]:
 
 
 def check_path_for_collision_old(xi,path,obstacle):
@@ -363,7 +378,7 @@ def check_path_for_collision_old(xi,path,obstacle):
 # check_path_for_collision ([0,0],[np.pi/2,10,0], [[-1,1],[1,1]])
 
 
-# In[13]:
+# In[169]:
 
 
 def check_path_for_collision(xi,path,obstacle):
@@ -376,16 +391,16 @@ def check_path_for_collision(xi,path,obstacle):
     padded_obstacle[1][1] += 2*furthest_point_robot
     
 #     print(x1,x2)
-    [collision,d] =  intersect_line_obstacle(xi,dist ,ang1,padded_obstacle)
+    [collision,d] =  intersect_line_obstacle(xi,dist ,xi[2]+ang1,padded_obstacle)
 
 
     
     return collision,d
 #TODO it drives right into a corner
-check_path_for_collision ([0,0],[np.pi/2,10,0], [[-1,1],[2,2]])
+check_path_for_collision ([0,0,0],[np.pi/2,10,0], [[-1,1],[2,2]])
 
 
-# In[16]:
+# In[117]:
 
 
 # xi=[0.29044650718618625, 0.8134124653073828, 0.4414837032879717]
@@ -406,7 +421,7 @@ check_path_for_collision ([0,0],[np.pi/2,10,0], [[-1,1],[2,2]])
 # intersect_line_obstacle(xi,traj[1],traj[0],obstacles_list[-1])
 
 
-# In[17]:
+# In[131]:
 
 
 def check_path_for_collisions(xi,path,obstacles):
@@ -425,7 +440,7 @@ def check_path_for_collisions(xi,path,obstacles):
 check_path_for_collisions ([0,0],[np.pi/2,10,0], [ [[-1,1],[1,1]], [[-1,5],[1,1]] ])
 
 
-# In[23]:
+# In[132]:
 
 
 n_obstacles = 10
@@ -445,7 +460,7 @@ ax = show_world(obstacles_list,target = target,dimensions=[world_size,world_size
 plot_robot([1,1,np.pi/2],ax)
 
 
-# In[23]:
+# In[133]:
 
 
 for ob in obstacles_list:
@@ -458,7 +473,7 @@ xx4 = xx2 + 0.34382102230701117
     
 
 
-# In[75]:
+# In[134]:
 
 
 def plot_rrt_evol(E):
@@ -469,11 +484,12 @@ def plot_rrt_evol(E):
     
 
 
-# In[31]:
+# In[167]:
 
 
 np.random.seed(0)
-n_points = 20000
+n_points = 1000
+dbg_indx = -1
 # ax = show_world(obstacles_list)
 xi = [1,0.25,0]
 V = [xi]
@@ -482,6 +498,12 @@ C = []
 target_found = False
 for i in range(n_points):
     xr = [np.random.uniform(0,world_size),np.random.uniform(0,world_size),np.random.uniform(0,2*np.pi)]
+    if i==dbg_indx:
+        ax = show_world(obstacles_list,target=target)
+        for e in E:
+            ae = np.array(e)
+            plt.plot(ae[:,0],ae[:,1],'b',linewidth =0.1)
+        plt.plot(xr[0],xr[1],'rx')
     d_min = 1000
 #     print(xr)
     for x in V:
@@ -489,10 +511,16 @@ for i in range(n_points):
         if d < d_min:
             d_min = d
             x_min = x
+    if  i==dbg_indx:
+        plt.plot(x_min[0],x_min[1],'bx')
+            
 #     print("1: ",x_min,xr)
     [traj,controls,x_new] = execute_trajectory(x_min,xr)
-#     print("2: ",[traj,controls,x_new])
+    if  i==dbg_indx:
+        print("2: ","xr",xr,"s",x_min,"traj",traj,"end",x_new)
 #     print("3:" ,x_min,traj)
+    if i==dbg_indx:
+        plt.plot(x_new[0],x_new[1],'gx')
     collision,d = check_path_for_collisions(x_min,traj,obstacles_list)
     
     if not collision:
@@ -520,8 +548,8 @@ for i in range(n_points):
 #         ax = show_world(obstacles_list)
 #         plt.plot(ae[:,0],ae[:,1],'b')
 #         plt.show()
-    if i%2000==0 or i==n_points -1:
-         plot_rrt_evol(E)
+    if (i%2000==0 and i>0) or i==n_points -1:
+        plot_rrt_evol(E)
         plt.show()
 plot_rrt_evol(E)
 plt.show()
