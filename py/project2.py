@@ -22,7 +22,7 @@ tail_dist = 0.075
 robot_height = tail_dist  + wheel_radius
 
 
-# In[22]:
+# In[4]:
 
 
 def show_world(obstacles = [[[0.5,0.5],[0.1,0.5]], [[0.8,0.5],[0.01,0.03]]],oneway = None, target = None,dimensions = [2,2]):
@@ -60,7 +60,7 @@ ax = show_world()
 plot_robot([1,1,np.pi/2],ax)
 
 
-# In[110]:
+# In[5]:
 
 
 def get_angle_diff(a1,a2):
@@ -77,7 +77,7 @@ def get_dist_diff(c1,c2):
     return dist
 
 
-# In[79]:
+# In[6]:
 
 
 w_wheel_rpm = 60
@@ -90,7 +90,7 @@ v_robot = v_wheel
 print(v_robot,w_robot)
 
 
-# In[94]:
+# In[7]:
 
 
 def plan_trajectory(xi,xt):
@@ -109,7 +109,7 @@ print(plan_trajectory([1,1,0],[1,0,-np.pi]))
 print(plan_trajectory([1,1,0],[2,2,-np.pi]))  
 
 
-# In[97]:
+# In[8]:
 
 
 def time_trajectory(xi,xt):
@@ -129,7 +129,7 @@ print(time_trajectory([1,1,0],[1,0,-np.pi]))
 print(time_trajectory([1,1,0],[2,2,-np.pi]))  
 
 
-# In[111]:
+# In[9]:
 
 
 def metric(c1,c2):
@@ -148,7 +148,7 @@ print(metric([1,1,0],[1,1,np.pi/4]))
 print(metric([1,1,0],[1,1,-np.pi/4]))
 
 
-# In[164]:
+# In[10]:
 
 
 def execute_trajectory(xi,xt,duration = 1):
@@ -242,7 +242,7 @@ print()
 print(execute_trajectory([1.0074272458687608, 0.33980059164984955, 1.4882759426619756],[0.23654885173786644, 1.2798420426550476, 0.9007152691844127])) 
 
 
-# In[128]:
+# In[11]:
 
 
 # https://math.stackexchange.com/questions/261336/intersection-between-a-rectangle-and-a-circle
@@ -291,7 +291,7 @@ def interset_circle_obstacle(c,r,obstacle):
 interset_circle_obstacle([0,0],1,[[-2,-2],[5,5]])
 
 
-# In[129]:
+# In[12]:
 
 
 def intersect_line_obstacle(xi,dist,theta,obstacle):
@@ -351,7 +351,7 @@ def intersect_line_obstacle(xi,dist,theta,obstacle):
 # intersect_line_obstacle(xi,traj[1]+ furthest_point_robot,traj[0],obstacles_list[0])
 
 
-# In[115]:
+# In[13]:
 
 
 def check_path_for_collision_old(xi,path,obstacle):
@@ -378,7 +378,7 @@ def check_path_for_collision_old(xi,path,obstacle):
 # check_path_for_collision ([0,0],[np.pi/2,10,0], [[-1,1],[1,1]])
 
 
-# In[169]:
+# In[14]:
 
 
 def check_path_for_collision(xi,path,obstacle):
@@ -400,7 +400,7 @@ def check_path_for_collision(xi,path,obstacle):
 check_path_for_collision ([0,0,0],[np.pi/2,10,0], [[-1,1],[2,2]])
 
 
-# In[117]:
+# In[15]:
 
 
 # xi=[0.29044650718618625, 0.8134124653073828, 0.4414837032879717]
@@ -421,7 +421,7 @@ check_path_for_collision ([0,0,0],[np.pi/2,10,0], [[-1,1],[2,2]])
 # intersect_line_obstacle(xi,traj[1],traj[0],obstacles_list[-1])
 
 
-# In[131]:
+# In[17]:
 
 
 def check_path_for_collisions(xi,path,obstacles):
@@ -437,10 +437,10 @@ def check_path_for_collisions(xi,path,obstacles):
     if collision:
         d = np.min(d_all)
     return collision,d
-check_path_for_collisions ([0,0],[np.pi/2,10,0], [ [[-1,1],[1,1]], [[-1,5],[1,1]] ])
+check_path_for_collisions ([0,0,0],[np.pi/2,10,0], [ [[-1,1],[1,1]], [[-1,5],[1,1]] ])
 
 
-# In[132]:
+# In[18]:
 
 
 n_obstacles = 10
@@ -460,7 +460,7 @@ ax = show_world(obstacles_list,target = target,dimensions=[world_size,world_size
 plot_robot([1,1,np.pi/2],ax)
 
 
-# In[133]:
+# In[20]:
 
 
 for ob in obstacles_list:
@@ -473,7 +473,7 @@ xx4 = xx2 + 0.34382102230701117
     
 
 
-# In[134]:
+# In[21]:
 
 
 def plot_rrt_evol(E):
@@ -484,7 +484,7 @@ def plot_rrt_evol(E):
     
 
 
-# In[167]:
+# In[27]:
 
 
 np.random.seed(0)
@@ -548,14 +548,14 @@ for i in range(n_points):
 #         ax = show_world(obstacles_list)
 #         plt.plot(ae[:,0],ae[:,1],'b')
 #         plt.show()
-    if (i%2000==0 and i>0) or i==n_points -1:
+    if (i%100==0 and i>0) or i==n_points -1:
         plot_rrt_evol(E)
         plt.show()
 plot_rrt_evol(E)
 plt.show()
 
 
-# In[71]:
+# In[23]:
 
 
 def find_parent(e):
@@ -578,7 +578,7 @@ def build_tree():
 edge_list = build_tree()
 
 
-# In[77]:
+# In[24]:
 
 
 plot_rrt_evol(E)
@@ -601,16 +601,7 @@ plt.show()
 
 
 
-# In[ ]:
-
-
-print(np.array(E))
-for e in E:
-    ae = np.array(e)
-    plt.plot(ae[:,0],ae[:,1],'b')
-
-
-# In[ ]:
+# In[26]:
 
 
 for _ in range(100):
