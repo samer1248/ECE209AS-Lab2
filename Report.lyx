@@ -202,6 +202,10 @@ Since, we are using a kinematic model, we assume that the robot always uses
 
  are both constants.
  
+\begin_inset Newpage pagebreak
+\end_inset
+
+
 \end_layout
 
 \begin_layout Section*
@@ -570,6 +574,10 @@ This approach has the advantange of being simple.
 \begin_inset Graphics
 	filename rrt_4.png
 
+\end_inset
+
+
+\begin_inset Newpage pagebreak
 \end_inset
 
 

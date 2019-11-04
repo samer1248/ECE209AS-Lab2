@@ -837,14 +837,6 @@ target2 = [[0,0.9],[0.1,0.1]]
 s = run_rrt(target2,obstacles_list2,dimensions = [1,1],xi = [0.6,0.1,0],seed = 0, evolution = -1)
 
 
-# In[31]:
-
-
-obstacles_list2 = [[[0,0.7],[0.8,0.1]], [[0.3,0.3],[0.8,0.1]] ]
-target2 = [[0,0.9],[0.1,0.1]]
-s = run_rrt_star(target2,obstacles_list2,dimensions = [1,1],xi = [0.6,0.1,0],seed = 0, evolution = -1)
-
-
 # In[ ]:
 
 
