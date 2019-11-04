@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[2]:
+# In[1]:
 
 
 import numpy as np
@@ -13,18 +13,20 @@ import time
 import copy
 
 
-# In[3]:
+# In[2]:
 
 
+# Robot dimensions
 wheel_radius = 0.025
 wheel_sep = 0.09
 tail_dist = 0.075
 robot_height = tail_dist  + wheel_radius
 
 
-# In[147]:
+# In[3]:
 
 
+# Plot world
 def show_world(obstacles = [[[0.5,0.5],[0.1,0.5]], [[0.8,0.5],[0.01,0.03]]],oneway = None, target = None,dimensions = [1,1]):
     plt.rcParams['figure.dpi'] = 300
     fig = plt.figure()
@@ -46,8 +48,7 @@ def show_world(obstacles = [[[0.5,0.5],[0.1,0.5]], [[0.8,0.5],[0.01,0.03]]],onew
     plt.gca().set_aspect('equal', adjustable='box')
     return ax
         
-#         plt.grid()
-
+# Plot robot
 def plot_robot(rc,ax):       
     coords = [0.025,0.075]
     robot_dims = [0.05,0.1]
@@ -60,9 +61,10 @@ ax = show_world()
 plot_robot([1,1,np.pi/2],ax)
 
 
-# In[308]:
+# In[4]:
 
 
+# Calculated difference between angles
 def get_angle_diff(a1,a2):
     ang_cw =  (a2 -a1)% (2*np.pi)
     ang_ccw = (- a2 + a1)% (2*np.pi)
@@ -72,6 +74,7 @@ def get_angle_diff(a1,a2):
         ang = - ang
     return ang
 
+# Calculate distance between two points
 def get_dist_diff(c1,c2):
     dist = np.sqrt(((c1[0] - c2[0])**2 + (c1[1] - c2[1])**2))
     return dist
@@ -81,9 +84,10 @@ print(get_angle_diff(0,-0.1))
 print(get_angle_diff(0,0))
 
 
-# In[193]:
+# In[5]:
 
 
+# Assuming maximum rpm used, calculate linear and rotational velocities of robot
 w_wheel_rpm = 60
 w_wheel = w_wheel_rpm * 2 * np.pi /60
 v_wheel = w_wheel * wheel_radius
@@ -94,9 +98,10 @@ v_robot = v_wheel
 print(v_robot,w_robot)
 
 
-# In[68]:
+# In[6]:
 
 
+# Trajectory conssts of prerotation, forward motion, post rotation
 def plan_trajectory(xi,xt):
     ang_points =  np.arctan2(xt[1] - xi[1], xt[0] - xi[0])
     ang1 = get_angle_diff(xi[2],ang_points) 
@@ -113,9 +118,10 @@ print(plan_trajectory([1,1,0],[1,0,-np.pi]))
 print(plan_trajectory([1,1,0],[2,2,-np.pi]))  
 
 
-# In[277]:
+# In[7]:
 
 
+# Time whole trajectory execution
 def time_trajectory2(xi,xt):
     ang_points = np.arctan2(xt[1] - xi[1], xt[0] - xi[0])
     ang1 = get_angle_diff(xi[2],ang_points) 
@@ -129,25 +135,28 @@ def time_trajectory2(xi,xt):
     return [[ang1,dist,ang2],t]
 
 def time_trajectory(xi,xt):
-    ang_points = np.arctan2(xt[1] - xi[1], xt[0] - xi[0])
-    ang1 = get_angle_diff(xi[2],ang_points) 
-    t = np.abs(ang1/w_robot)
+    return time_trajectory2(xi,xt)
+# def time_trajectory(xi,xt):
+#     ang_points = np.arctan2(xt[1] - xi[1], xt[0] - xi[0])
+#     ang1 = get_angle_diff(xi[2],ang_points) 
+#     t = np.abs(ang1/w_robot)
 
-    dist = get_dist_diff(xi,xt)
-    t += np.abs(dist/v_robot)
+#     dist = get_dist_diff(xi,xt)
+#     t += np.abs(dist/v_robot)
     
-    ang2 =  get_angle_diff(ang_points,xt[2])
-#     t += np.abs(ang2/w_robot)
-    return [[ang1,dist,ang2],t]
+#     ang2 =  get_angle_diff(ang_points,xt[2])
+# #     t += np.abs(ang2/w_robot)
+#     return [[ang1,dist,ang2],t]
 
-print(time_trajectory([1,1,np.pi/2],[1,2,np.pi]))        
-print(time_trajectory([1,1,0],[1,0,-np.pi]))  
-print(time_trajectory([1,1,0],[2,2,-np.pi]))  
-
-
-# In[316]:
+# print(time_trajectory([1,1,np.pi/2],[1,2,np.pi]))        
+# print(time_trajectory([1,1,0],[1,0,-np.pi]))  
+# print(time_trajectory([1,1,0],[2,2,-np.pi]))  
 
 
+# In[8]:
+
+
+# Calculate metric 1, which consits of linear distance and a 10% of the rotational distance
 def metric(c1,c2):
     dist = get_dist_diff(c1,c2)
     ang = get_angle_diff(c1[2],c2[2])
@@ -158,7 +167,7 @@ def metric(c1,c2):
     
     return  metric #time_trajectory(c1,c2)[-1] #get_dist_diff(c1,c2)#  # time_trajectory(c1,c2)[-1] # get_dist_diff(c1,c2)#
 
-
+# Calculate metric 2, which is execution time
 def metric2(c1,c2):
     return  time_trajectory2(c1,c2)[-1] #get_dist_diff(c1,c2)#  # time_trajectory(c1,c2)[-1] # get_dist_diff(c1,c2)#
 
@@ -169,9 +178,10 @@ print(metric([1,1,0],[1,1,np.pi/4]))
 print(metric([1,1,0],[1,1,-np.pi/4]))
 
 
-# In[312]:
+# In[9]:
 
 
+# Execute trajectory for one second
 def execute_trajectory(xi,xt,duration = 1):
     t = 0
     ang1 = 0
@@ -180,14 +190,18 @@ def execute_trajectory(xi,xt,duration = 1):
     control_seq = [[0,0,0]]
     x_end = copy.deepcopy(xi)
     
+    # Calculate prerotation target
     ang_points =  np.arctan2(xt[1] - xi[1], xt[0] - xi[0])
     ang1 = get_angle_diff(xi[2],ang_points) 
     if ang1!=0:
+        # calculate time needed for prerotation
         t_ang1 = np.abs(ang1/w_robot)
         t = t_ang1
 
         control_seq[-1][0] = np.sign(ang1) * w_wheel_rpm
         control_seq[-1][1] = -np.sign(ang1)*w_wheel_rpm
+        # If requires more time than duration calculate possible
+        # prerotation
         if t_ang1>duration:
             ang1 = w_robot*duration*np.sign(ang1)
             control_seq[-1][2] = duration
@@ -195,18 +209,23 @@ def execute_trajectory(xi,xt,duration = 1):
             x_end[2] = (xi[2] + ang1)%(2*np.pi)
             return [[ang1,dist,ang2],control_seq,x_end]
         else:
+            # Else do entire prerotation
             control_seq[-1][2] = t_ang1
             t = t_ang1
             x_end[2] = (xi[2] + ang1)%(2*np.pi)
             control_seq.append([0,0,0])
     
+    # Calculate linear distance
     dist = get_dist_diff(xi,xt)
     if dist!=0:
+        # calculate time needed for linear travel
         t_dist = dist/v_robot
 
         control_seq[-1][0] = w_wheel_rpm
         control_seq[-1][1] = w_wheel_rpm
         if  t + t_dist>duration:
+            # If requires more time than duration calculate possible
+            # linear travel
             dist = v_robot* (duration - t)
             x_end[0] += dist*np.cos(x_end[2])
             x_end[1] += dist*np.sin(x_end[2])
@@ -214,27 +233,34 @@ def execute_trajectory(xi,xt,duration = 1):
             control_seq[-1][2] = t_dist
             return [[ang1,dist,ang2],control_seq,x_end]
         else:
+            # Else do linear travel
             control_seq[-1][2] = t_dist
             t = t + t_dist
             x_end[0] += dist*np.cos(x_end[2])
             x_end[1] += dist*np.sin(x_end[2])
             control_seq.append([0,0,0])
     
+    # Calculate post rotation angle
     ang2 =  get_angle_diff(ang_points,xt[2])
     if ang2!=0:
+        # calculate time needed for post rotation
         t_ang2 =  np.abs(ang1/w_robot)
         control_seq[-1][0] = np.sign(ang1) * w_wheel_rpm
         control_seq[-1][1] = -np.sign(ang1)*w_wheel_rpm
         if t + t_ang1>duration:
+            # If requires more time than duration calculate possible
+            # post rotation
             ang2 = w_robot*np.sign(ang2)*(duration -t)
             control_seq[-1][2] = duration - t
             x_end[2] = (x_end[2] + ang2)%(2*np.pi)
             t = duration
             return [[ang1,dist,ang2],control_seq,x_end]
         else:
+            # Else do entire postrotation
             control_seq[-1][2] = t_ang2
             t = t + t_ang1
             x_end[2] = (x_end[2] + ang2)%(2*np.pi)
+            # Do nothing for remaining time
             control_seq.append([0,0,0])
             control_seq[-1][2] = duration - t
 
@@ -263,13 +289,19 @@ print()
 print(execute_trajectory([1.0074272458687608, 0.33980059164984955, 1.4882759426619756],[0.23654885173786644, 1.2798420426550476, 0.9007152691844127])) 
 
 
+# In[10]:
+
+
+# calculate furthest point in robot
+furthest_point_robot = np.sqrt((wheel_sep/2)**2+tail_dist**2)
+
+
 # In[11]:
 
 
+# Intersect circle with rectangle
+
 # https://math.stackexchange.com/questions/261336/intersection-between-a-rectangle-and-a-circle
-
-furthest_point_robot = np.sqrt((wheel_sep/2)**2+tail_dist**2)
-
 def intersect_circle_segment(c,r,seg,vert):
     intersect = False
     xc,yc = c
@@ -315,6 +347,7 @@ interset_circle_obstacle([0,0],1,[[-2,-2],[5,5]])
 # In[12]:
 
 
+# Intersect line with rectangle
 def intersect_line_obstacle(xi,dist,theta,obstacle):
 #     theta = np.pi/2-theta
     intersect = False
@@ -375,26 +408,27 @@ def intersect_line_obstacle(xi,dist,theta,obstacle):
 # In[13]:
 
 
-def check_path_for_collision_old(xi,path,obstacle):
-    ang1,dist,ang2 = path
+# def check_path_for_collision_old(xi,path,obstacle):
+#     ang1,dist,ang2 = path
     
-    x1 = [xi[0]+furthest_point_robot*np.sin(ang1), xi[1]+furthest_point_robot*np.cos(ang1)]
-    x2 = [xi[0]-furthest_point_robot*np.sin(ang1), xi[1]-furthest_point_robot*np.cos(ang1)]
-#     print(x1,x2)
-    [collision1,d1] =  intersect_line_obstacle(x1,dist + furthest_point_robot,ang1,obstacle)
-    [collision2,d2] =  intersect_line_obstacle(x2,dist + furthest_point_robot,ang1,obstacle)
-    collision = collision1 or collision2
-#     print(collision1,collision2)
-    d_all = []
-    if collision1:
-        d_all.append(d1-furthest_point_robot)
-    if collision2:
-        d_all.append(d2-furthest_point_robot)
-    max_d = -1
-    if len(d_all)>0:
-        max_d = np.min(d_all)
+#     x1 = [xi[0]+furthest_point_robot*np.sin(ang1), xi[1]+furthest_point_robot*np.cos(ang1)]
+#     x2 = [xi[0]-furthest_point_robot*np.sin(ang1), xi[1]-furthest_point_robot*np.cos(ang1)]
+# #     print(x1,x2)
+#     [collision1,d1] =  intersect_line_obstacle(x1,dist + furthest_point_robot,ang1,obstacle)
+#     [collision2,d2] =  intersect_line_obstacle(x2,dist + furthest_point_robot,ang1,obstacle)
+#     collision = collision1 or collision2
+# #     print(collision1,collision2)
+#     d_all = []
+#     if collision1:
+#         d_all.append(d1-furthest_point_robot)
+#     if collision2:
+#         d_all.append(d2-furthest_point_robot)
+#     max_d = -1
+#     if len(d_all)>0:
+#         max_d = np.min(d_all)
     
-    return collision,max_d
+#     return collision,max_d
+
 #TODO it drives right into a corner
 # check_path_for_collision ([0,0],[np.pi/2,10,0], [[-1,1],[1,1]])
 
@@ -402,9 +436,10 @@ def check_path_for_collision_old(xi,path,obstacle):
 # In[14]:
 
 
+# Check for collisions with an obstacel
 def check_path_for_collision(xi,path,obstacle):
     ang1,dist,ang2 = path
-    
+    # Pad obstacle
     padded_obstacle = copy.deepcopy(obstacle)
     padded_obstacle[0][0] -= furthest_point_robot
     padded_obstacle[0][1] -= furthest_point_robot
@@ -412,6 +447,7 @@ def check_path_for_collision(xi,path,obstacle):
     padded_obstacle[1][1] += 2*furthest_point_robot
     
 #     print(x1,x2)
+    # Check for intersection with padded obstacle
     [collision,d] =  intersect_line_obstacle(xi,dist ,xi[2]+ang1,padded_obstacle)
 
 
@@ -442,9 +478,10 @@ check_path_for_collision ([0,0,0],[np.pi/2,10,0], [[-1,1],[2,2]])
 # intersect_line_obstacle(xi,traj[1],traj[0],obstacles_list[-1])
 
 
-# In[17]:
+# In[16]:
 
 
+# Check for collision with all obstacles
 def check_path_for_collisions(xi,path,obstacles):
     collision = False
     d_all = []
@@ -461,9 +498,10 @@ def check_path_for_collisions(xi,path,obstacles):
 check_path_for_collisions ([0,0,0],[np.pi/2,10,0], [ [[-1,1],[1,1]], [[-1,5],[1,1]] ])
 
 
-# In[218]:
+# In[17]:
 
 
+# Generate random world
 n_obstacles = 10
 world_size = 1
 np.random.seed(563121)
@@ -481,36 +519,27 @@ ax = show_world(obstacles_list,target = target,dimensions=[world_size,world_size
 plot_robot([0.1,0.1,np.pi/2],ax)
 
 
-# In[20]:
+# In[18]:
 
 
-for ob in obstacles_list:
-    print(ob)
-    
-xx1 = 0.344505291025931
-xx2 = 0.6097855469027977
-xx3 = xx1 + 0.571795719141825
-xx4 = xx2 + 0.34382102230701117
-    
-
-
-# In[245]:
-
-
-def plot_rrt_evol(E):
+# Plot world and all edges
+def plot_rrt_evol(E,obstacles_list,target):
     ax = show_world(obstacles_list,target=target)      
     for e in E:
         ae = np.array(e)
         plt.plot(ae[:,0],ae[:,1],'b',linewidth =0.1)
-        
+
+# Find a parent of vertex e given edge list E
 def find_parent(e,Ev):
     return np.where((Ev[:,1,:]==e).all(axis =1))[0][0]
 
-print(Ev.shape)
-Ef = Ev[-1,:,:]
-print(Ef[0])
+# print(Ev.shape)
+# Ef = Ev[-1,:,:]
+# print(Ef[0])
 # print(find_parent(Ef[0]))
 
+# Given last node index (target_node), Edge list (Ev), start node xi
+# find edges connecting xi to last node
 def build_tree(Ev,xi,target_node = -1):
     edge_list = []
     x = Ev[target_node,1,:]
@@ -522,81 +551,77 @@ def build_tree(Ev,xi,target_node = -1):
     return edge_list
 
 
-# In[319]:
+# In[19]:
 
 
+# Run RRT
 def run_rrt(target,obstacles_list,dimensions = [2,2],xi = [1,0.25,0],seed = 0, evolution = -1):
         np.random.seed(seed)
+        # Number of points
         n_points = 1000
         dbg_indx = -1
-        # ax = show_world(obstacles_list)
+
         
-        V = [xi]
-        E = []
-        C = [0]
+        V = [xi] # Vertex list
+        E = [] # Edge list
+        C = [0] # Cost of edges
         target_found = False
         for i in range(n_points):
+            # Generate random point in the world
             xr = [np.random.uniform(0,world_size),np.random.uniform(0,world_size),np.random.uniform(-np.pi,np.pi)]
-            if i==dbg_indx:
-                ax = show_world(obstacles_list,target=target)
-                for e in E:
-                    ae = np.array(e)
-                    plt.plot(ae[:,0],ae[:,1],'b',linewidth =0.1)
-                plt.plot(xr[0],xr[1],'rx')
+#             if i==dbg_indx:
+#                 ax = show_world(obstacles_list,target=target)
+#                 for e in E:
+#                     ae = np.array(e)
+#                     plt.plot(ae[:,0],ae[:,1],'b',linewidth =0.1)
+#                 plt.plot(xr[0],xr[1],'rx')
+            
             d_min = 10000
-            if  i==dbg_indx:
-                print(xr)
+#             if  i==dbg_indx:
+#                 print(xr)
+            # Find closest point 
             for x,cv in zip(V,C):
                 d = metric(xr,x)
                 if d < d_min:
                     d_min = d
                     x_min = x
                     c_min = cv
-            if  i==dbg_indx:
-                plt.plot(x_min[0],x_min[1],'bx')
+#             if  i==dbg_indx:
+#                 plt.plot(x_min[0],x_min[1],'bx')
 
-        #     print("1: ",x_min,xr)
+#             print("1: ",x_min,xr)
             [traj,controls,x_new] = execute_trajectory(x_min,xr)
-            if  i==dbg_indx:
-                print("2: ","xr",xr,"s",x_min,"traj",traj,"end",x_new)
-        #     print("3:" ,x_min,traj)
-            if i==dbg_indx:
-                plt.plot(x_new[0],x_new[1],'gx')
+#             if  i==dbg_indx:
+#                 print("2: ","xr",xr,"s",x_min,"traj",traj,"end",x_new)
+#             print("3:" ,x_min,traj)
+#             if i==dbg_indx:
+#                 plt.plot(x_new[0],x_new[1],'gx')
+
+            # Check for collison
             collision,d = check_path_for_collisions(x_min,traj,obstacles_list)
 
             if not collision:
-
+                # If no collision, add node
                 c_new = c_min +  metric2(x_min,x_new)
                 C.append(c_new)
                 V.append(x_new)
                 E.append([x_min,x_new])
-
+                
+                # If target found end
                 if x_new[0]>target[0][0] and x_new[0]<target[0][0]+target[1][0] and x_new[1]>target[0][1] and x_new[1]<target[0][1]+target[1][1]:
                     print("Target Found")
                     print(x_new)
-                    print('Cost ',c_new)
+#                     print('Cost ',c_new)
                     x_final = x_new
                     break
-        #         if x_new[0]>xx1 and x_new[0]<xx3 and x_new[1]>xx2 and x_new[1]<xx4:
-        #             print("x_min",x_min); print("x_new",x_new); print("traj",traj); print("xr",xr); print("collision", collision)
-        #             ax = show_world(obstacles_list)      
-        #             for e in E:
-        #                 ae = np.array(e)
-        #                 plt.plot(ae[:,0],ae[:,1],'b',linewidth =0.1)
-        #             ae = np.array(E[-1])
-        #             plt.plot(ae[:,0],ae[:,1],'r',linewidth =0.2)
-        #             break
-        #         print(x,x_new,traj)
-        #         ae = np.array([x,x_new])
-        #         ax = show_world(obstacles_list)
-        #         plt.plot(ae[:,0],ae[:,1],'b')
-        #         plt.show()
+            # Print evolution
             if ((i%evolution==0 and i>0) or i==n_points -1) and evolution>=0:
-                plot_rrt_evol(E)
+                plot_rrt_evol(E,obstacles_list,target)
                 plt.show()
-        plot_rrt_evol(E)
+        plot_rrt_evol(E,obstacles_list,target)
         Ev = np.array(E)
         edge_list = build_tree(Ev,xi)
+        # Plot path and print cost
         c=0
         for indx in edge_list:
             e = E[indx]
@@ -605,12 +630,14 @@ def run_rrt(target,obstacles_list,dimensions = [2,2],xi = [1,0.25,0],seed = 0, e
             plt.plot(ae[:,0],ae[:,1],'r',linewidth =0.2)
         plt.show()
         print("Cost ",c)
-run_rrt(target,obstacles_list,dimensions = [1,1],xi = [0.6,0.1,0],seed = 0, evolution = 250)
+        return i
+run_rrt(target,obstacles_list,dimensions = [1,1],xi = [0.6,0.1,0],seed = 0, evolution = 100)
 
 
-# In[299]:
+# In[20]:
 
 
+# Find neighbors of a node 
 def find_neighbors(c,r,V):
     n = []
     for i in  range(len(V)):
@@ -618,6 +645,7 @@ def find_neighbors(c,r,V):
         if metric2(c,v)<r:
             n.append(i)
     return n
+# Pick node with lowest cost within target region
 def find_target(E,C,target):
     Ev = np.array(E)
     x = Ev[:,1,0]
@@ -631,47 +659,53 @@ def find_target(E,C,target):
     return target_list[lowest_cost]
 
 
-# In[335]:
+# In[21]:
 
 
+# Run RRT*
 def run_rrt_star(target,obstacles_list,dimensions = [2,2],seed = 0,xi = [1,0.25,0], evolution = -1):   
     np.random.seed(seed)
     target_found = False
+    # Number of points
     n_points = 5000
     dbg_indx = -1
-    # ax = show_world(obstacles_list)
-    V = [xi]
-    E = [[[0,0,0],[0,0,0]],]
-    C = [0]
+    V = [xi] # Vertex list
+    E = [[[0,0,0],[0,0,0]],] # Edge list
+    C = [0] # Costs
     target_found = False
     for i in range(n_points):
+        # Generate random node
         xr = [np.random.uniform(0,dimensions[0]),np.random.uniform(0,dimensions[1]),np.random.uniform(0,2*np.pi)]
-        if i==dbg_indx:
-            ax = show_world(obstacles_list,target=target)
-            for e in E:
-                ae = np.array(e)
-                plt.plot(ae[:,0],ae[:,1],'b',linewidth =0.1)
-            plt.plot(xr[0],xr[1],'rx')
+#         if i==dbg_indx:
+#             ax = show_world(obstacles_list,target=target)
+#             for e in E:
+#                 ae = np.array(e)
+#                 plt.plot(ae[:,0],ae[:,1],'b',linewidth =0.1)
+#             plt.plot(xr[0],xr[1],'rx')
         d_min = 1000
-    #     print(xr)
+    
+        # Find nearset node
         for x,cv in zip(V,C):
             d = metric(xr,x)
             if d < d_min:
                 d_min = d
                 x_min = x
                 c_min = cv
+        # Execute trajectory for one second
         [traj,controls,x_new] = execute_trajectory(x_min,xr)
+        #Check for collisions
         collision,d = check_path_for_collisions(x_min,traj,obstacles_list)
-
+        
+        # If no collisions
         if not collision:
-
-
-            
+            # Retain node
             d_new = d_min
             c_new = c_min + metric2(x_min,x_new)
             
             c_min = 1000
+            # Find neighbors of node
             neigbors = find_neighbors(x_new,1.2,V)
+            # Check if x_new has a better parent
             for i in  neigbors:
                 cv = C[i]
                 v = V[i]
@@ -681,6 +715,7 @@ def run_rrt_star(target,obstacles_list,dimensions = [2,2],seed = 0,xi = [1,0.25,
                     x_min = v
                     c_min = cv 
                     c_new = cv +  metric2(v,x_new)
+            # Check if x_new is a better parent to any of the nodes
             for i in  neigbors:
                 cv = C[i]
                 v = V[i]
@@ -688,20 +723,21 @@ def run_rrt_star(target,obstacles_list,dimensions = [2,2],seed = 0,xi = [1,0.25,
                 if  c_new + metric2(v,x_new) < cv :
                     E[i][0] = x_new
                     C[i] = c_new + metric2(v,x_new)
-                
+            # Add x_new and its edge
             V.append(x_new)
             E.append([x_min,x_new])
             C.append(c_new)
             
+            # Check if we hit the target
             if x_new[0]>target[0][0] and x_new[0]<target[0][0]+target[1][0] and x_new[1]>target[0][1] and x_new[1]<target[0][1]+target[1][1]:
 #                 print("Target Found")
                 target_found = True
 #                 print(x_new)
 #                 x_final = x_new
 #                 break
-
+        # Print intermediate steps
         if ((i%evolution==0 and i>0) or i==n_points -1) and evolution>=0:
-            plot_rrt_evol(E)
+            plot_rrt_evol(E,obstacles_list,target)
             if target_found:
                 ti = find_target(E,C,target)
                 print('Cost ',C[ti])
@@ -715,10 +751,12 @@ def run_rrt_star(target,obstacles_list,dimensions = [2,2],seed = 0,xi = [1,0.25,
                     plt.plot(ae[:,0],ae[:,1],'r',linewidth =0.2)
             print(c)
             plt.show()
-    plot_rrt_evol(E)
+    plot_rrt_evol(E,obstacles_list,target)
     
+    # Find lowest cost target
     ti = find_target(E,C,target)
     print('Cost ',C[ti])
+    # Print everything
     Ev = np.array(E)
     edge_list = build_tree(Ev,xi,ti)
     for indx in edge_list:
@@ -726,45 +764,94 @@ def run_rrt_star(target,obstacles_list,dimensions = [2,2],seed = 0,xi = [1,0.25,
         ae = np.array(e)
         plt.plot(ae[:,0],ae[:,1],'r',linewidth =0.2)
     plt.show()
-    return E
+    return i
 
-E = run_rrt_star(target,obstacles_list,dimensions = [1,1],xi = [0.6,0.1,0],seed = 1, evolution = 500)
-
-
-# In[ ]:
+run_rrt_star(target,obstacles_list,dimensions = [1,1],xi = [0.6,0.1,0],seed = 1, evolution = 500)
 
 
-plot_rrt_evol(E)
-Ev = np.array(E)
-edge_list = build_tree(Ev)
-for indx in edge_list:
-    e = E[indx]
-    ae = np.array(e)
-    plt.plot(ae[:,0],ae[:,1],'r',linewidth =0.2)
-plt.show()
-
-
-# In[51]:
-
-
-V = [[0,0],[1,0]]
-x_min = [1,0]
-x_new = [1,1]
-for v in V:
-    print(v,metric(v,x_new), metric(x_new,x_min), metric(v,x_min))
-    if  metric(v,x_new) < metric(x_new,x_min) +  metric(v,x_min):
-        x_min = v
-        d_new = metric(v,x_new)
-print(x_min)
-
-
-# In[ ]:
+# In[22]:
 
 
 
+get_ipython().run_line_magic('load_ext', 'line_profiler')
+get_ipython().run_line_magic('lprun', '-f run_rrt run_rrt(target,obstacles_list,dimensions = [1,1],xi = [0.6,0.1,0],seed = 0, evolution = -1)')
+
+
+# In[23]:
+
+
+t=time.time()
+s = run_rrt(target,obstacles_list,dimensions = [1,1],xi = [0.6,0.1,0],seed = 0, evolution = -1)
+t_ex = time.time()-t
+print("Execution time ",t_ex)
+print("Time per step ",t_ex/s )
+
+
+# In[24]:
+
+
+t=time.time()
+s = run_rrt_star(target,obstacles_list,dimensions = [1,1],xi = [0.6,0.1,0],seed = 1, evolution = -1)
+t_ex = time.time()-t
+print("Execution time ",t_ex)
+print("Time per step ",t_ex/s )
 
 
 # In[26]:
+
+
+obstacles_list2 = [[[0,0.5],[0.8,0.1]]]
+
+s = run_rrt(target,obstacles_list2,dimensions = [1,1],xi = [0.6,0.1,0],seed = 0, evolution = -1)
+
+
+# In[27]:
+
+
+obstacles_list2 = [[[0,0.5],[0.8,0.1]]]
+target2 = [[0,0.9],[0.1,0.1]]
+s = run_rrt(target2,obstacles_list2,dimensions = [1,1],xi = [0.6,0.1,0],seed = 0, evolution = -1)
+
+
+# In[28]:
+
+
+obstacles_list2 = [[[0,0.5],[0.8,0.1]],  [[0.7,0.79],[0.1,0.3]] ]
+target2 = [[0,0.9],[0.1,0.1]]
+s = run_rrt(target2,obstacles_list2,dimensions = [1,1],xi = [0.6,0.1,0],seed = 0, evolution = -1)
+
+
+# In[29]:
+
+
+obstacles_list2 = [[[0,0.7],[0.8,0.1]] ]
+target2 = [[0,0.9],[0.1,0.1]]
+s = run_rrt(target2,obstacles_list2,dimensions = [1,1],xi = [0.6,0.1,0],seed = 0, evolution = -1)
+
+
+# In[30]:
+
+
+obstacles_list2 = [[[0,0.7],[0.8,0.1]], [[0.3,0.3],[0.8,0.1]] ]
+target2 = [[0,0.9],[0.1,0.1]]
+s = run_rrt(target2,obstacles_list2,dimensions = [1,1],xi = [0.6,0.1,0],seed = 0, evolution = -1)
+
+
+# In[31]:
+
+
+obstacles_list2 = [[[0,0.7],[0.8,0.1]], [[0.3,0.3],[0.8,0.1]] ]
+target2 = [[0,0.9],[0.1,0.1]]
+s = run_rrt_star(target2,obstacles_list2,dimensions = [1,1],xi = [0.6,0.1,0],seed = 0, evolution = -1)
+
+
+# In[ ]:
+
+
+
+
+
+# In[ ]:
 
 
 for _ in range(100):
