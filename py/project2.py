@@ -22,10 +22,10 @@ tail_dist = 0.075
 robot_height = tail_dist  + wheel_radius
 
 
-# In[4]:
+# In[147]:
 
 
-def show_world(obstacles = [[[0.5,0.5],[0.1,0.5]], [[0.8,0.5],[0.01,0.03]]],oneway = None, target = None,dimensions = [2,2]):
+def show_world(obstacles = [[[0.5,0.5],[0.1,0.5]], [[0.8,0.5],[0.01,0.03]]],oneway = None, target = None,dimensions = [1,1]):
     plt.rcParams['figure.dpi'] = 300
     fig = plt.figure()
     ax=fig.add_subplot(111)
@@ -60,7 +60,7 @@ ax = show_world()
 plot_robot([1,1,np.pi/2],ax)
 
 
-# In[5]:
+# In[213]:
 
 
 def get_angle_diff(a1,a2):
@@ -76,8 +76,12 @@ def get_dist_diff(c1,c2):
     dist = np.sqrt(((c1[0] - c2[0])**2 + (c1[1] - c2[1])**2))
     return dist
 
+print(get_angle_diff(0,0.1))
+print(get_angle_diff(0,-0.1))
+print(get_angle_diff(0,2*np.pi))
 
-# In[6]:
+
+# In[193]:
 
 
 w_wheel_rpm = 60
@@ -109,7 +113,7 @@ print(plan_trajectory([1,1,0],[1,0,-np.pi]))
 print(plan_trajectory([1,1,0],[2,2,-np.pi]))  
 
 
-# In[8]:
+# In[228]:
 
 
 def time_trajectory(xi,xt):
@@ -121,7 +125,7 @@ def time_trajectory(xi,xt):
     t += np.abs(dist/v_robot)
     
     ang2 =  get_angle_diff(ang_points,xt[2])
-    t += np.abs(ang2/w_robot)
+#     t += np.abs(ang2/w_robot)
     return [[ang1,dist,ang2],t]
      
 print(time_trajectory([1,1,np.pi/2],[1,2,np.pi]))        
@@ -129,7 +133,7 @@ print(time_trajectory([1,1,0],[1,0,-np.pi]))
 print(time_trajectory([1,1,0],[2,2,-np.pi]))  
 
 
-# In[81]:
+# In[195]:
 
 
 def metric(c1,c2):
@@ -138,9 +142,9 @@ def metric(c1,c2):
     
 #     rot_dist =  np.abs(ang) * wheel_sep
     
-#     metric = dist + rot_dist
+#     metric = dist + 0.1 *rot_dist
     
-    return time_trajectory(c1,c2)[-1]
+    return  time_trajectory(c1,c2)[-1] #get_dist_diff(c1,c2)#  # time_trajectory(c1,c2)[-1] # get_dist_diff(c1,c2)#
 
 print(metric([1,1,0],[2,1,0]))
 
@@ -148,7 +152,7 @@ print(metric([1,1,0],[1,1,np.pi/4]))
 print(metric([1,1,0],[1,1,-np.pi/4]))
 
 
-# In[10]:
+# In[220]:
 
 
 def execute_trajectory(xi,xt,duration = 1):
@@ -171,12 +175,12 @@ def execute_trajectory(xi,xt,duration = 1):
             ang1 = w_robot*duration*np.sign(ang1)
             control_seq[-1][2] = duration
             t = duration
-            x_end[2] = xi[2] + ang1
+            x_end[2] = (xi[2] + ang1)%(2*np.pi)
             return [[ang1,dist,ang2],control_seq,x_end]
         else:
             control_seq[-1][2] = t_ang1
             t = t_ang1
-            x_end[2] = xi[2] + ang1
+            x_end[2] = (xi[2] + ang1)%(2*np.pi)
             control_seq.append([0,0,0])
     
     dist = get_dist_diff(xi,xt)
@@ -207,13 +211,13 @@ def execute_trajectory(xi,xt,duration = 1):
         if t + t_ang1>duration:
             ang2 = w_robot*np.sign(ang2)
             control_seq[-1][2] = duration - t
-            x_end[2] = x_end[2] + ang2
+            x_end[2] = (x_end[2] + ang2)%(2*np.pi)
             t = duration
             return [[ang1,dist,ang2],control_seq,x_end]
         else:
             control_seq[-1][2] = t_ang2
             t = t + t_ang1
-            x_end[2] = x_end[2] + ang2
+            x_end[2] = (x_end[2] + ang2)%(2*np.pi)
             control_seq.append([0,0,0])
             control_seq[-1][2] = duration - t
 
@@ -440,14 +444,14 @@ def check_path_for_collisions(xi,path,obstacles):
 check_path_for_collisions ([0,0,0],[np.pi/2,10,0], [ [[-1,1],[1,1]], [[-1,5],[1,1]] ])
 
 
-# In[18]:
+# In[218]:
 
 
 n_obstacles = 10
-world_size = 2
+world_size = 1
 np.random.seed(563121)
-obstacle_positions = np.random.uniform(0.2,world_size-0.2,[n_obstacles,2]).tolist()
-obstacle_dims = np.random.uniform(0.15,0.6,[n_obstacles,2]).tolist()
+obstacle_positions = np.random.uniform(0.2/2,world_size-0.2/2,[n_obstacles,2]).tolist()
+obstacle_dims = np.random.uniform(0.15/2,0.6/2,[n_obstacles,2]).tolist()
 
 obstacles_list = []
 for i in range(n_obstacles):
@@ -455,9 +459,9 @@ for i in range(n_obstacles):
 
 # obstacles_list= [[[0.5,0.5],[1,1]]]
 
-target = [[0,1.5],[0.5,0.5]]
+target = [[0,1.5/2],[0.5/2,0.5/2]]
 ax = show_world(obstacles_list,target = target,dimensions=[world_size,world_size])
-plot_robot([1,1,np.pi/2],ax)
+plot_robot([0.1,0.1,np.pi/2],ax)
 
 
 # In[20]:
@@ -473,7 +477,7 @@ xx4 = xx2 + 0.34382102230701117
     
 
 
-# In[21]:
+# In[245]:
 
 
 def plot_rrt_evol(E):
@@ -481,115 +485,110 @@ def plot_rrt_evol(E):
     for e in E:
         ae = np.array(e)
         plt.plot(ae[:,0],ae[:,1],'b',linewidth =0.1)
-    
-
-
-# In[27]:
-
-
-np.random.seed(0)
-n_points = 1000
-dbg_indx = -1
-# ax = show_world(obstacles_list)
-xi = [1,0.25,0]
-V = [xi]
-E = []
-C = []
-target_found = False
-for i in range(n_points):
-    xr = [np.random.uniform(0,world_size),np.random.uniform(0,world_size),np.random.uniform(0,2*np.pi)]
-    if i==dbg_indx:
-        ax = show_world(obstacles_list,target=target)
-        for e in E:
-            ae = np.array(e)
-            plt.plot(ae[:,0],ae[:,1],'b',linewidth =0.1)
-        plt.plot(xr[0],xr[1],'rx')
-    d_min = 1000
-#     print(xr)
-    for x in V:
-        d = metric(xr,x)
-        if d < d_min:
-            d_min = d
-            x_min = x
-    if  i==dbg_indx:
-        plt.plot(x_min[0],x_min[1],'bx')
-
-#     print("1: ",x_min,xr)
-    [traj,controls,x_new] = execute_trajectory(x_min,xr)
-    if  i==dbg_indx:
-        print("2: ","xr",xr,"s",x_min,"traj",traj,"end",x_new)
-#     print("3:" ,x_min,traj)
-    if i==dbg_indx:
-        plt.plot(x_new[0],x_new[1],'gx')
-    collision,d = check_path_for_collisions(x_min,traj,obstacles_list)
-
-    if not collision:
-
-
-        V.append(x_new)
-        E.append([x_min,x_new])
-
-        if x_new[0]>target[0][0] and x_new[0]<target[0][0]+target[1][0] and x_new[1]>target[0][1] and x_new[1]<target[0][1]+target[1][1]:
-            print("Target Found")
-            print(x_new)
-            x_final = x_new
-            break
-#         if x_new[0]>xx1 and x_new[0]<xx3 and x_new[1]>xx2 and x_new[1]<xx4:
-#             print("x_min",x_min); print("x_new",x_new); print("traj",traj); print("xr",xr); print("collision", collision)
-#             ax = show_world(obstacles_list)      
-#             for e in E:
-#                 ae = np.array(e)
-#                 plt.plot(ae[:,0],ae[:,1],'b',linewidth =0.1)
-#             ae = np.array(E[-1])
-#             plt.plot(ae[:,0],ae[:,1],'r',linewidth =0.2)
-#             break
-#         print(x,x_new,traj)
-#         ae = np.array([x,x_new])
-#         ax = show_world(obstacles_list)
-#         plt.plot(ae[:,0],ae[:,1],'b')
-#         plt.show()
-    if (i%100==0 and i>0) or i==n_points -1:
-        plot_rrt_evol(E)
-        plt.show()
-plot_rrt_evol(E)
-plt.show()
-
-
-# In[86]:
-
-
-def find_parent(e):
+        
+def find_parent(e,Ev):
     return np.where((Ev[:,1,:]==e).all(axis =1))[0][0]
-Ev = np.array(E)
+
 print(Ev.shape)
 Ef = Ev[-1,:,:]
 print(Ef[0])
-print(find_parent(Ef[0]))
+# print(find_parent(Ef[0]))
 
-def build_tree():
+def build_tree(Ev,xi,target_node = -1):
     edge_list = []
-    x = Ev[-1,1,:]
+    x = Ev[target_node,1,:]
     while  np.all(x!=np.array(xi)):
-        par_indx = find_parent(x)
+        par_indx = find_parent(x,Ev)
         edge_list.insert(0,par_indx)
         x = Ev[par_indx,0]
 #         print(edge_list)
     return edge_list
-edge_list = build_tree()
 
 
-# In[24]:
+# In[229]:
 
 
-plot_rrt_evol(E)
-for indx in edge_list:
-    e = E[indx]
-    ae = np.array(e)
-    plt.plot(ae[:,0],ae[:,1],'r',linewidth =0.2)
-plt.show()
+def run_rrt(target,obstacles_list,dimensions = [2,2],xi = [1,0.25,0],seed = 0, evolution = -1):
+        np.random.seed(seed)
+        n_points = 1000
+        dbg_indx = 12
+        # ax = show_world(obstacles_list)
+        
+        V = [xi]
+        E = []
+        C = []
+        target_found = False
+        for i in range(n_points):
+            xr = [np.random.uniform(0,world_size),np.random.uniform(0,world_size),np.random.uniform(-np.pi,np.pi)]
+            if i==dbg_indx:
+                ax = show_world(obstacles_list,target=target)
+                for e in E:
+                    ae = np.array(e)
+                    plt.plot(ae[:,0],ae[:,1],'b',linewidth =0.1)
+                plt.plot(xr[0],xr[1],'rx')
+            d_min = 10000
+            if  i==dbg_indx:
+                print(xr)
+            for x in V:
+                d = metric(xr,x)
+                if  i==dbg_indx:
+                    print(x,d)
+                if d < d_min:
+                    d_min = d
+                    x_min = x
+            if  i==dbg_indx:
+                plt.plot(x_min[0],x_min[1],'bx')
+
+        #     print("1: ",x_min,xr)
+            [traj,controls,x_new] = execute_trajectory(x_min,xr)
+            if  i==dbg_indx:
+                print("2: ","xr",xr,"s",x_min,"traj",traj,"end",x_new)
+        #     print("3:" ,x_min,traj)
+            if i==dbg_indx:
+                plt.plot(x_new[0],x_new[1],'gx')
+            collision,d = check_path_for_collisions(x_min,traj,obstacles_list)
+
+            if not collision:
 
 
-# In[75]:
+                V.append(x_new)
+                E.append([x_min,x_new])
+
+                if x_new[0]>target[0][0] and x_new[0]<target[0][0]+target[1][0] and x_new[1]>target[0][1] and x_new[1]<target[0][1]+target[1][1]:
+                    print("Target Found")
+                    print(x_new)
+                    x_final = x_new
+                    break
+        #         if x_new[0]>xx1 and x_new[0]<xx3 and x_new[1]>xx2 and x_new[1]<xx4:
+        #             print("x_min",x_min); print("x_new",x_new); print("traj",traj); print("xr",xr); print("collision", collision)
+        #             ax = show_world(obstacles_list)      
+        #             for e in E:
+        #                 ae = np.array(e)
+        #                 plt.plot(ae[:,0],ae[:,1],'b',linewidth =0.1)
+        #             ae = np.array(E[-1])
+        #             plt.plot(ae[:,0],ae[:,1],'r',linewidth =0.2)
+        #             break
+        #         print(x,x_new,traj)
+        #         ae = np.array([x,x_new])
+        #         ax = show_world(obstacles_list)
+        #         plt.plot(ae[:,0],ae[:,1],'b')
+        #         plt.show()
+            if ((i%evolution==0 and i>0) or i==n_points -1) and evolution>=0:
+                plot_rrt_evol(E)
+                plt.show()
+        plot_rrt_evol(E)
+        Ev = np.array(E)
+        edge_list = build_tree(Ev,xi)
+        for indx in edge_list:
+            e = E[indx]
+            ae = np.array(e)
+            plt.plot(ae[:,0],ae[:,1],'r',linewidth =0.2)
+        plt.show()
+
+run_rrt(target,obstacles_list,dimensions = [1,1],xi = [0.6,0.1,0],seed = 2, evolution = 100)
+
+
+# In[244]:
 
 
 def find_neighbors(c,r,V):
@@ -599,98 +598,121 @@ def find_neighbors(c,r,V):
         if metric(c,v)<r:
             n.append(i)
     return n
+def find_target(E,C,target):
+    Ev = np.array(E)
+    x = Ev[:,1,0]
+    y = Ev[:,1,1]
+    target_index = np.logical_and(x > target[0][0], x<target[0][0]+target[1][0])
+    target_index = np.logical_and(target_index,y>target[0][1])
+    target_index = np.logical_and(target_index,y<target[0][1]+target[1][1])
+    Cv = np.array(C)
+    lowest_cost = np.argmin(Cv[target_index])
+    target_list = np.where(target_index)[0]
+    return target_list[lowest_cost]
 
 
-# In[84]:
+# In[ ]:
 
 
-np.random.seed(0)
-n_points = 1000
-dbg_indx = -1
-# ax = show_world(obstacles_list)
-xi = [1,0.25,0]
-V = [xi]
-E = [[[0,0,0],[0,0,0]],]
-C = [0]
-target_found = False
-for i in range(n_points):
-    xr = [np.random.uniform(0,world_size),np.random.uniform(0,world_size),np.random.uniform(0,2*np.pi)]
-    if i==dbg_indx:
-        ax = show_world(obstacles_list,target=target)
-        for e in E:
-            ae = np.array(e)
-            plt.plot(ae[:,0],ae[:,1],'b',linewidth =0.1)
-        plt.plot(xr[0],xr[1],'rx')
-    d_min = 1000
-#     print(xr)
-    for x,cv in zip(V,C):
-        d = metric(xr,x)
-        if d < d_min:
-            d_min = d
-            x_min = x
-            c_min = cv
-    [traj,controls,x_new] = execute_trajectory(x_min,xr)
-    collision,d = check_path_for_collisions(x_min,traj,obstacles_list)
+def run_rrt_star(target,obstacles_list,dimensions = [2,2],seed = 0,xi = [1,0.25,0], evolution = -1):   
+    np.random.seed(seed)
+    target_found = False
+    n_points = 5000
+    dbg_indx = -1
+    # ax = show_world(obstacles_list)
+    V = [xi]
+    E = [[[0,0,0],[0,0,0]],]
+    C = [0]
+    target_found = False
+    for i in range(n_points):
+        xr = [np.random.uniform(0,dimensions[0]),np.random.uniform(0,dimensions[1]),np.random.uniform(0,2*np.pi)]
+        if i==dbg_indx:
+            ax = show_world(obstacles_list,target=target)
+            for e in E:
+                ae = np.array(e)
+                plt.plot(ae[:,0],ae[:,1],'b',linewidth =0.1)
+            plt.plot(xr[0],xr[1],'rx')
+        d_min = 1000
+    #     print(xr)
+        for x,cv in zip(V,C):
+            d = metric(xr,x)
+            if d < d_min:
+                d_min = d
+                x_min = x
+                c_min = cv
+        [traj,controls,x_new] = execute_trajectory(x_min,xr)
+        collision,d = check_path_for_collisions(x_min,traj,obstacles_list)
 
-    if not collision:
+        if not collision:
 
 
-        
-        d_new = d_min
-        
-        c_min = 1000
-        neigbors = find_neighbors(x_new,3.0,V)
-        for i in  neigbors:
-            cv = C[i]
-            v = V[i]
-            d_new_v = metric(v,x_new)
-#                 print(v,metric(v,x_new), metric(x_new,x_min), metric(v,x_min))
-            if  cv + metric(v,x_new) < metric(x_min,x_new) + c_min :
-                x_min = v
-                c_min = cv 
-                c_new = c_min +  metric(v,x_new)
-        for i in  neigbors:
-            cv = C[i]
-            v = V[i]
-            e = E[i]
-            if  c_new + metric(v,x_new) < cv :
-                E[i][0] = x_new
             
-        V.append(x_new)
-        E.append([x_min,x_new])
-        C.append(c_new)
-        
-        if x_new[0]>target[0][0] and x_new[0]<target[0][0]+target[1][0] and x_new[1]>target[0][1] and x_new[1]<target[0][1]+target[1][1]:
-            print("Target Found")
-            print(x_new)
-            x_final = x_new
-            break
-#         if x_new[0]>xx1 and x_new[0]<xx3 and x_new[1]>xx2 and x_new[1]<xx4:
-#             print("x_min",x_min); print("x_new",x_new); print("traj",traj); print("xr",xr); print("collision", collision)
-#             ax = show_world(obstacles_list)      
-#             for e in E:
-#                 ae = np.array(e)
-#                 plt.plot(ae[:,0],ae[:,1],'b',linewidth =0.1)
-#             ae = np.array(E[-1])
-#             plt.plot(ae[:,0],ae[:,1],'r',linewidth =0.2)
-#             break
-#         print(x,x_new,traj)
-#         ae = np.array([x,x_new])
-#         ax = show_world(obstacles_list)
-#         plt.plot(ae[:,0],ae[:,1],'b')
-        plt.show()
-    if (i%100==0 and i>0) or i==n_points -1:
-        plot_rrt_evol(E)
-        plt.title(i)
-        plt.show()
+            d_new = d_min
+            c_new = c_min + d_min
+            
+            c_min = 1000
+            neigbors = find_neighbors(x_new,1,V)
+            for i in  neigbors:
+                cv = C[i]
+                v = V[i]
+                d_new_v = metric(v,x_new)
+#                 print(v,metric(v,x_new), metric(x_new,x_min), metric(v,x_min))
+                if  cv + metric(v,x_new) < metric(x_min,x_new) + c_min :
+                    x_min = v
+                    c_min = cv 
+                    c_new = c_min +  metric(v,x_new)
+            for i in  neigbors:
+                cv = C[i]
+                v = V[i]
+                e = E[i]
+                if  c_new + metric(v,x_new) < cv :
+                    E[i][0] = x_new
+                
+            V.append(x_new)
+            E.append([x_min,x_new])
+            C.append(c_new)
+            
+            if x_new[0]>target[0][0] and x_new[0]<target[0][0]+target[1][0] and x_new[1]>target[0][1] and x_new[1]<target[0][1]+target[1][1]:
+#                 print("Target Found")
+                target_found = True
+#                 print(x_new)
+#                 x_final = x_new
+#                 break
+
+        if ((i%evolution==0 and i>0) or i==n_points -1) and evolution>=0:
+            plot_rrt_evol(E)
+            if target_found:
+                ti = find_target(E,C,target)
+    
+                Ev = np.array(E)
+                edge_list = build_tree(Ev,xi,ti)
+                for indx in edge_list:
+                    e = E[indx]
+                    ae = np.array(e)
+                    plt.plot(ae[:,0],ae[:,1],'r',linewidth =0.2)
+            plt.show()
+    plot_rrt_evol(E)
+    
+    ti = find_target(E,C,target)
+    
+    Ev = np.array(E)
+    edge_list = build_tree(Ev,xi,ti)
+    for indx in edge_list:
+        e = E[indx]
+        ae = np.array(e)
+        plt.plot(ae[:,0],ae[:,1],'r',linewidth =0.2)
+    plt.show()
+    return E
+
+E = run_rrt_star(target,obstacles_list,dimensions = [1,1],xi = [0.6,0.1,0],seed = 0, evolution = 1000)
+
+
+# In[ ]:
+
+
 plot_rrt_evol(E)
-plt.show()
-
-
-# In[85]:
-
-
-plot_rrt_evol(E)
+Ev = np.array(E)
+edge_list = build_tree(Ev)
 for indx in edge_list:
     e = E[indx]
     ae = np.array(e)
