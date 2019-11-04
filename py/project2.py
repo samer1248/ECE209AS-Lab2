@@ -60,7 +60,7 @@ ax = show_world()
 plot_robot([1,1,np.pi/2],ax)
 
 
-# In[213]:
+# In[308]:
 
 
 def get_angle_diff(a1,a2):
@@ -78,7 +78,7 @@ def get_dist_diff(c1,c2):
 
 print(get_angle_diff(0,0.1))
 print(get_angle_diff(0,-0.1))
-print(get_angle_diff(0,2*np.pi))
+print(get_angle_diff(0,0))
 
 
 # In[193]:
@@ -113,8 +113,20 @@ print(plan_trajectory([1,1,0],[1,0,-np.pi]))
 print(plan_trajectory([1,1,0],[2,2,-np.pi]))  
 
 
-# In[228]:
+# In[277]:
 
+
+def time_trajectory2(xi,xt):
+    ang_points = np.arctan2(xt[1] - xi[1], xt[0] - xi[0])
+    ang1 = get_angle_diff(xi[2],ang_points) 
+    t = np.abs(ang1/w_robot)
+
+    dist = get_dist_diff(xi,xt)
+    t += np.abs(dist/v_robot)
+    
+    ang2 =  get_angle_diff(ang_points,xt[2])
+    t += np.abs(ang2/w_robot)
+    return [[ang1,dist,ang2],t]
 
 def time_trajectory(xi,xt):
     ang_points = np.arctan2(xt[1] - xi[1], xt[0] - xi[0])
@@ -127,24 +139,29 @@ def time_trajectory(xi,xt):
     ang2 =  get_angle_diff(ang_points,xt[2])
 #     t += np.abs(ang2/w_robot)
     return [[ang1,dist,ang2],t]
-     
+
 print(time_trajectory([1,1,np.pi/2],[1,2,np.pi]))        
 print(time_trajectory([1,1,0],[1,0,-np.pi]))  
 print(time_trajectory([1,1,0],[2,2,-np.pi]))  
 
 
-# In[195]:
+# In[316]:
 
 
 def metric(c1,c2):
-#     dist = get_dist_diff(c1,c2)
-#     ang = get_angle_diff(c1[2],c2[2])
+    dist = get_dist_diff(c1,c2)
+    ang = get_angle_diff(c1[2],c2[2])
     
-#     rot_dist =  np.abs(ang) * wheel_sep
+    rot_dist =  np.abs(ang) * wheel_sep
     
-#     metric = dist + 0.1 *rot_dist
+    metric = dist + 0.1 *rot_dist
     
-    return  time_trajectory(c1,c2)[-1] #get_dist_diff(c1,c2)#  # time_trajectory(c1,c2)[-1] # get_dist_diff(c1,c2)#
+    return  metric #time_trajectory(c1,c2)[-1] #get_dist_diff(c1,c2)#  # time_trajectory(c1,c2)[-1] # get_dist_diff(c1,c2)#
+
+
+def metric2(c1,c2):
+    return  time_trajectory2(c1,c2)[-1] #get_dist_diff(c1,c2)#  # time_trajectory(c1,c2)[-1] # get_dist_diff(c1,c2)#
+
 
 print(metric([1,1,0],[2,1,0]))
 
@@ -152,7 +169,7 @@ print(metric([1,1,0],[1,1,np.pi/4]))
 print(metric([1,1,0],[1,1,-np.pi/4]))
 
 
-# In[220]:
+# In[312]:
 
 
 def execute_trajectory(xi,xt,duration = 1):
@@ -209,7 +226,7 @@ def execute_trajectory(xi,xt,duration = 1):
         control_seq[-1][0] = np.sign(ang1) * w_wheel_rpm
         control_seq[-1][1] = -np.sign(ang1)*w_wheel_rpm
         if t + t_ang1>duration:
-            ang2 = w_robot*np.sign(ang2)
+            ang2 = w_robot*np.sign(ang2)*(duration -t)
             control_seq[-1][2] = duration - t
             x_end[2] = (x_end[2] + ang2)%(2*np.pi)
             t = duration
@@ -505,18 +522,18 @@ def build_tree(Ev,xi,target_node = -1):
     return edge_list
 
 
-# In[229]:
+# In[319]:
 
 
 def run_rrt(target,obstacles_list,dimensions = [2,2],xi = [1,0.25,0],seed = 0, evolution = -1):
         np.random.seed(seed)
         n_points = 1000
-        dbg_indx = 12
+        dbg_indx = -1
         # ax = show_world(obstacles_list)
         
         V = [xi]
         E = []
-        C = []
+        C = [0]
         target_found = False
         for i in range(n_points):
             xr = [np.random.uniform(0,world_size),np.random.uniform(0,world_size),np.random.uniform(-np.pi,np.pi)]
@@ -529,13 +546,12 @@ def run_rrt(target,obstacles_list,dimensions = [2,2],xi = [1,0.25,0],seed = 0, e
             d_min = 10000
             if  i==dbg_indx:
                 print(xr)
-            for x in V:
+            for x,cv in zip(V,C):
                 d = metric(xr,x)
-                if  i==dbg_indx:
-                    print(x,d)
                 if d < d_min:
                     d_min = d
                     x_min = x
+                    c_min = cv
             if  i==dbg_indx:
                 plt.plot(x_min[0],x_min[1],'bx')
 
@@ -550,13 +566,15 @@ def run_rrt(target,obstacles_list,dimensions = [2,2],xi = [1,0.25,0],seed = 0, e
 
             if not collision:
 
-
+                c_new = c_min +  metric2(x_min,x_new)
+                C.append(c_new)
                 V.append(x_new)
                 E.append([x_min,x_new])
 
                 if x_new[0]>target[0][0] and x_new[0]<target[0][0]+target[1][0] and x_new[1]>target[0][1] and x_new[1]<target[0][1]+target[1][1]:
                     print("Target Found")
                     print(x_new)
+                    print('Cost ',c_new)
                     x_final = x_new
                     break
         #         if x_new[0]>xx1 and x_new[0]<xx3 and x_new[1]>xx2 and x_new[1]<xx4:
@@ -579,23 +597,25 @@ def run_rrt(target,obstacles_list,dimensions = [2,2],xi = [1,0.25,0],seed = 0, e
         plot_rrt_evol(E)
         Ev = np.array(E)
         edge_list = build_tree(Ev,xi)
+        c=0
         for indx in edge_list:
             e = E[indx]
+            c+=metric2(e[0],e[1])
             ae = np.array(e)
             plt.plot(ae[:,0],ae[:,1],'r',linewidth =0.2)
         plt.show()
+        print("Cost ",c)
+run_rrt(target,obstacles_list,dimensions = [1,1],xi = [0.6,0.1,0],seed = 0, evolution = 250)
 
-run_rrt(target,obstacles_list,dimensions = [1,1],xi = [0.6,0.1,0],seed = 2, evolution = 100)
 
-
-# In[244]:
+# In[299]:
 
 
 def find_neighbors(c,r,V):
     n = []
     for i in  range(len(V)):
         v = V[i]
-        if metric(c,v)<r:
+        if metric2(c,v)<r:
             n.append(i)
     return n
 def find_target(E,C,target):
@@ -611,7 +631,7 @@ def find_target(E,C,target):
     return target_list[lowest_cost]
 
 
-# In[ ]:
+# In[335]:
 
 
 def run_rrt_star(target,obstacles_list,dimensions = [2,2],seed = 0,xi = [1,0.25,0], evolution = -1):   
@@ -648,25 +668,26 @@ def run_rrt_star(target,obstacles_list,dimensions = [2,2],seed = 0,xi = [1,0.25,
 
             
             d_new = d_min
-            c_new = c_min + d_min
+            c_new = c_min + metric2(x_min,x_new)
             
             c_min = 1000
-            neigbors = find_neighbors(x_new,1,V)
+            neigbors = find_neighbors(x_new,1.2,V)
             for i in  neigbors:
                 cv = C[i]
                 v = V[i]
-                d_new_v = metric(v,x_new)
+#                 d_new_v = metric2(v,x_new)
 #                 print(v,metric(v,x_new), metric(x_new,x_min), metric(v,x_min))
-                if  cv + metric(v,x_new) < metric(x_min,x_new) + c_min :
+                if  cv + metric2(v,x_new) < metric2(x_min,x_new) + c_min :
                     x_min = v
                     c_min = cv 
-                    c_new = c_min +  metric(v,x_new)
+                    c_new = cv +  metric2(v,x_new)
             for i in  neigbors:
                 cv = C[i]
                 v = V[i]
                 e = E[i]
-                if  c_new + metric(v,x_new) < cv :
+                if  c_new + metric2(v,x_new) < cv :
                     E[i][0] = x_new
+                    C[i] = c_new + metric2(v,x_new)
                 
             V.append(x_new)
             E.append([x_min,x_new])
@@ -683,18 +704,21 @@ def run_rrt_star(target,obstacles_list,dimensions = [2,2],seed = 0,xi = [1,0.25,
             plot_rrt_evol(E)
             if target_found:
                 ti = find_target(E,C,target)
-    
+                print('Cost ',C[ti])
                 Ev = np.array(E)
                 edge_list = build_tree(Ev,xi,ti)
+                c = 0
                 for indx in edge_list:
                     e = E[indx]
+                    c+=metric2(e[0],e[1])
                     ae = np.array(e)
                     plt.plot(ae[:,0],ae[:,1],'r',linewidth =0.2)
+            print(c)
             plt.show()
     plot_rrt_evol(E)
     
     ti = find_target(E,C,target)
-    
+    print('Cost ',C[ti])
     Ev = np.array(E)
     edge_list = build_tree(Ev,xi,ti)
     for indx in edge_list:
@@ -704,7 +728,7 @@ def run_rrt_star(target,obstacles_list,dimensions = [2,2],seed = 0,xi = [1,0.25,
     plt.show()
     return E
 
-E = run_rrt_star(target,obstacles_list,dimensions = [1,1],xi = [0.6,0.1,0],seed = 0, evolution = 1000)
+E = run_rrt_star(target,obstacles_list,dimensions = [1,1],xi = [0.6,0.1,0],seed = 1, evolution = 500)
 
 
 # In[ ]:
